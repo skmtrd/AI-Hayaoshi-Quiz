@@ -1,21 +1,22 @@
 import { z } from 'zod';
 
-export const Room = z.object({
+export const RoomSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  theme: z.string().nullable(),
   status: z.enum(['WAITING', 'PLAYING', 'FINISHED']),
+  numberOfUser: z.number().nullable(),
+  types: z.string().nullable(),
   currentSolverId: z.string().nullable(),
   inviteId: z.string(),
-  category: z.string().nullable(),
   difficulty: z.number().nullable(),
-  anserTimeLimit: z.number().nullable(),
+  answerTimeLimit: z.number().nullable(),
   thinkingTimeLimit: z.number().nullable(),
   currentQuestionId: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
 
-export const RoomWithResults = Room.extend({
+export const RoomWithResultsSchema = RoomSchema.extend({
   results: z.array(
     z.object({
       id: z.string(),
@@ -31,7 +32,7 @@ export const RoomWithResults = Room.extend({
   ),
 });
 
-export const Question = z.object({
+export const QuestionSchema = z.object({
   id: z.string(),
   question: z.string(),
   answer: z.string(),
@@ -41,7 +42,7 @@ export const Question = z.object({
   updatedAt: z.string(),
 });
 
-export const Solver = z.object({
+export const SolverSchema = z.object({
   id: z.string(),
   isCorrect: z.boolean(),
   userId: z.string(),
@@ -51,7 +52,7 @@ export const Solver = z.object({
   updatedAt: z.string(),
 });
 
-export const Result = z.object({
+export const ResultSchema = z.object({
   id: z.string(),
   roomId: z.string(),
   userId: z.string(),
