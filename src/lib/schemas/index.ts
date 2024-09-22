@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const Room = z.object({
+export const RoomSchema = z.object({
   id: z.string(),
   name: z.string(),
   status: z.enum(['WAITING', 'PLAYING', 'FINISHED']),
@@ -15,7 +15,7 @@ export const Room = z.object({
   updatedAt: z.string(),
 });
 
-export const RoomWithResults = Room.extend({
+export const RoomWithResultsSchema = RoomSchema.extend({
   results: z.array(
     z.object({
       id: z.string(),
@@ -31,7 +31,7 @@ export const RoomWithResults = Room.extend({
   ),
 });
 
-export const Question = z.object({
+export const QuestionSchema = z.object({
   id: z.string(),
   question: z.string(),
   answer: z.string(),
@@ -41,7 +41,7 @@ export const Question = z.object({
   updatedAt: z.string(),
 });
 
-export const Solver = z.object({
+export const SolverSchema = z.object({
   id: z.string(),
   isCorrect: z.boolean(),
   userId: z.string(),
@@ -51,7 +51,7 @@ export const Solver = z.object({
   updatedAt: z.string(),
 });
 
-export const Result = z.object({
+export const ResultSchema = z.object({
   id: z.string(),
   roomId: z.string(),
   userId: z.string(),
