@@ -7,17 +7,23 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write .",
+    "format": "prettier --write . && eslint --fix .",
     "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.4.2",
     "@prisma/client": "^5.19.1",
+    "@radix-ui/react-slot": "^1.1.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.445.0",
     "next": "14.2.7",
     "next-auth": "^5.0.0-beta.20",
     "react": "^18",
     "react-dom": "^18",
     "swr": "^2.2.5",
+    "tailwind-merge": "^2.5.2",
+    "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.8"
   },
   "devDependencies": {
