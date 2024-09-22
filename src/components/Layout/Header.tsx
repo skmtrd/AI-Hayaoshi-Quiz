@@ -22,7 +22,7 @@ export const Header = async () => {
         </Link>
         <DropdownMenu>
           <DropdownMenuTrigger className='flex items-center justify-center'>
-            <Avatar>
+            <Avatar className='select-none'>
               <AvatarImage src={session?.user?.image ?? ''} />
               <AvatarFallback>
                 <User className='size-6' />

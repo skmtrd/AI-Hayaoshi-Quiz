@@ -1,4 +1,3 @@
-import { TodoSchema } from '@/lib/schemas';
 import useSWR from 'swr';
 import { z, ZodError } from 'zod';
 
