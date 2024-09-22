@@ -21,6 +21,7 @@ export const POST = async (req: Request, res: NextResponse) =>
         answerTimeLimit,
         thinkingTimeLimit,
         types,
+        numberOfUser: 1,
         inviteId,
         status: RoomStatus.WAITING,
         users: { connect: { id: userId } },
@@ -34,4 +35,14 @@ export const POST = async (req: Request, res: NextResponse) =>
       },
       { status: 200 },
     );
+  });
+
+export const GET = async (req: Request, res: NextResponse) =>
+  handleAPIError(async () => {
+    await dbConnect();
+    const rooms = await prisma.room.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json<apiRes>({ message: 'success', data: rooms }, { status: 200 });
   });

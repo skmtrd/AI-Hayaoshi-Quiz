@@ -1,22 +1,25 @@
-import { TodoSchema } from '@/lib/schemas';
+'use client';
+
+import { RoomSchema } from '@/lib/schemas';
 import useSWR from 'swr';
 import { z, ZodError } from 'zod';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const useUserInfo = () => {
-  const { data, error, isLoading, mutate } = useSWR('/api/todo', fetcher);
-  const TodosSchema = z.array(TodoSchema);
+const useAllRoomData = () => {
+  const { data, error, isLoading, mutate } = useSWR('/api/room', fetcher, {
+    refreshInterval: 1000,
+    revalidateOnFocus: true,
+  });
+  const RoomsSchema = z.array(RoomSchema);
 
-  let parsedData: undefined | z.infer<typeof TodosSchema>;
+  let parsedData: undefined | z.infer<typeof RoomsSchema>;
   let parseError: Error | undefined;
-
-  console.log('data:', data);
 
   if (data) {
     try {
       const dataToValidate = data.data !== undefined ? data.data : data;
-      parsedData = TodosSchema.parse(dataToValidate);
+      parsedData = RoomsSchema.parse(dataToValidate);
     } catch (e) {
       if (e instanceof ZodError) {
         console.error('Zod parsing error:', e.errors);
@@ -31,11 +34,11 @@ const useUserInfo = () => {
   }
 
   return {
-    todos: parsedData,
+    rooms: parsedData,
     isError: error || parseError,
     isLoading,
     mutate,
   };
 };
 
-export default useUserInfo;
+export default useAllRoomData;
