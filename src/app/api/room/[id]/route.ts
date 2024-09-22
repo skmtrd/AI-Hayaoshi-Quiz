@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 export const PUT = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
     await dbConnect();
-    const { roomId } = await req.json();
+    const roomId = req.url.split('/room/')[1];
     const userId = await getUserId();
 
     //現在の部屋情報を取得する
