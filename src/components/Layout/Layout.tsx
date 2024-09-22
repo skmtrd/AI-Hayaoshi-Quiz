@@ -1,6 +1,5 @@
+import { Header } from '@/components/Layout/Header';
 import type { ReactNode } from 'react';
-
-import { Header } from './Header';
 
 export const Layout = ({ children }: { children: ReactNode }) => (
   <div className='flex min-h-svh flex-col'>

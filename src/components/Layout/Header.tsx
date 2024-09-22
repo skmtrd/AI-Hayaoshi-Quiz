@@ -1,3 +1,5 @@
+import { auth } from '@/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,8 +10,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogOut, User } from 'lucide-react';
 import Link from 'next/link';
-import { auth } from '../../../auth';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 export const Header = async () => {
   const session = await auth();
