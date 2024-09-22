@@ -5,20 +5,21 @@ import { apiRes } from '@/lib/types';
 import { RoomStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-
-const POST = async (req: Request, res: NextResponse) =>
+export const POST = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
     await dbConnect();
-    const { name, userId, category, difficulty, anserTimeLimit, thinkingTimeLimit } =
+    const { name, userId, category, difficulty, answerTimeLimit, thinkingTimeLimit, types } =
       await req.json();
+
     const inviteId: string = uuidv4();
     const newRoom = await prisma.room.create({
       data: {
         name,
         category,
         difficulty,
-        anserTimeLimit,
+        answerTimeLimit,
         thinkingTimeLimit,
+        types,
         inviteId,
         status: RoomStatus.WAITING,
         users: { connect: { id: userId } },

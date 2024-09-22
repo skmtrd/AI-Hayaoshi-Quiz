@@ -91,13 +91,14 @@ model Room {
   id        String    @id @default(cuid())
   name      String
   users     User[]
+  numberOfUser Int @default(0)
   status    RoomStatus
-  types     Types
+  types     String
   currentSolverId String?
   inviteId  String    @unique 
   category  String?
   difficulty Float?
-  anserTimeLimit Int? // ボタンを押してからの制限時間
+  answerTimeLimit Int? // ボタンを押してからの制限時間
   thinkingTimeLimit Int? // 問題が表示されてからの制限時間
   questions Question[]
   currentQuestionId String?
@@ -114,10 +115,7 @@ enum RoomStatus {
   FINISHED
 }
 
-enum Types {
-  private
-  rank
-}
+
 
 model Question {
   id       String    @id @default(cuid())
