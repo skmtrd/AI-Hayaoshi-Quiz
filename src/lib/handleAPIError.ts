@@ -1,6 +1,6 @@
+import { prisma } from '@/lib/prisma';
+import { apiRes } from '@/lib/types';
 import { NextResponse } from 'next/server';
-import { prisma } from './prisma';
-import { apiRes } from './types';
 
 export const handleAPIError = async (
   fn: () => Promise<NextResponse<apiRes>>,

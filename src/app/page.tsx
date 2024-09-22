@@ -1,3 +1,4 @@
+import { auth } from '@/auth';
 import SignIn from '@/components/SignIn';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +25,6 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Plus } from 'lucide-react';
-import { auth } from '../../auth';
 
 const Home = async () => {
   const session = await auth();
