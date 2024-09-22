@@ -1,4 +1,5 @@
 import { dbConnect } from '@/lib/dbConnect';
+import { getUserId } from '@/lib/getUserId';
 import { handleAPIError } from '@/lib/handleAPIError';
 import { prisma } from '@/lib/prisma';
 import { apiRes } from '@/lib/types';
@@ -8,14 +9,14 @@ import { v4 as uuidv4 } from 'uuid';
 export const POST = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
     await dbConnect();
-    const { name, userId, category, difficulty, answerTimeLimit, thinkingTimeLimit, types } =
-      await req.json();
+    const { theme, difficulty, answerTimeLimit, thinkingTimeLimit, types } = await req.json();
 
+    const userId = await getUserId();
     const inviteId: string = uuidv4();
+
     const newRoom = await prisma.room.create({
       data: {
-        name,
-        category,
+        theme,
         difficulty,
         answerTimeLimit,
         thinkingTimeLimit,

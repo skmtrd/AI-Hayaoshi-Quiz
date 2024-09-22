@@ -89,14 +89,13 @@ model Authenticator {
 // 部屋
 model Room {
   id        String    @id @default(cuid())
-  name      String
+  theme     String
   users     User[]
   numberOfUser Int @default(0)
   status    RoomStatus
   types     String
   currentSolverId String?
   inviteId  String    @unique 
-  category  String?
   difficulty Float?
   answerTimeLimit Int? // ボタンを押してからの制限時間
   thinkingTimeLimit Int? // 問題が表示されてからの制限時間
@@ -106,7 +105,7 @@ model Room {
   updatedAt DateTime  @updatedAt
   Result Result[]
 
-  @@index([name])
+  @@index([theme])
 }
 
 enum RoomStatus {
