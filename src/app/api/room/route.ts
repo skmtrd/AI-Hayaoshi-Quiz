@@ -21,6 +21,7 @@ export const POST = async (req: Request, res: NextResponse) =>
         answerTimeLimit,
         thinkingTimeLimit,
         types,
+        numberOfUser: 1,
         inviteId,
         status: RoomStatus.WAITING,
         users: { connect: { id: userId } },

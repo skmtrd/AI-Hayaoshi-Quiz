@@ -9,7 +9,7 @@ export const RoomSchema = z.object({
   currentSolverId: z.string().nullable(),
   inviteId: z.string(),
   difficulty: z.number().nullable(),
-  anserTimeLimit: z.number().nullable(),
+  answerTimeLimit: z.number().nullable(),
   thinkingTimeLimit: z.number().nullable(),
   currentQuestionId: z.string().nullable(),
   createdAt: z.string(),

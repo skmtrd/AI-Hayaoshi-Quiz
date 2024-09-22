@@ -22,16 +22,42 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+const createRoom = async (params: {
+  theme: string;
+  difficulty: number;
+  answerTimeLimit: number;
+  thinkingTimeLimit: number;
+  types: string;
+}) => {
+  const res = await fetch('/api/room', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
+  return res.json();
+};
 
 const CreateRoomButton = () => {
   const [theme, setTheme] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [time, setTime] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = () => {
-    console.log(theme, difficulty, time, isPrivate);
+  const handleSubmit = async () => {
+    const answerTimeLimit = time === 'unlimited' ? 9999 : Number(time);
+    const types = isPrivate ? 'PRIVATE' : 'PUBLIC';
+    const difficultyNum = difficulty === 'easy' ? 25 : difficulty === 'normal' ? 50 : 75;
+    const res = await createRoom({
+      theme,
+      difficulty: difficultyNum,
+      answerTimeLimit,
+      thinkingTimeLimit: 30,
+      types,
+    });
+    router.push(`/room/${res.data.newRoom.id}`);
   };
 
   return (
