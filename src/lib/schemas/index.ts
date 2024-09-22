@@ -2,11 +2,12 @@ import { z } from 'zod';
 
 export const RoomSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  theme: z.string().nullable(),
   status: z.enum(['WAITING', 'PLAYING', 'FINISHED']),
+  numberOfUser: z.number().nullable(),
+  types: z.string().nullable(),
   currentSolverId: z.string().nullable(),
   inviteId: z.string(),
-  category: z.string().nullable(),
   difficulty: z.number().nullable(),
   anserTimeLimit: z.number().nullable(),
   thinkingTimeLimit: z.number().nullable(),
