@@ -92,8 +92,9 @@ model Room {
   name      String
   users     User[]
   status    RoomStatus
+  types     Types
   currentSolverId String?
-  inviteId  String    @unique
+  inviteId  String    @unique 
   category  String?
   difficulty Float?
   anserTimeLimit Int? // ボタンを押してからの制限時間
@@ -105,6 +106,17 @@ model Room {
   Result Result[]
 
   @@index([name])
+}
+
+enum RoomStatus {
+  WAITING
+  PLAYING
+  FINISHED
+}
+
+enum Types {
+  private
+  rank
 }
 
 model Question {
@@ -154,8 +166,3 @@ model Result {
   @@index([userId])
 }
 
-enum RoomStatus {
-  WAITING
-  PLAYING
-  FINISHED
-}
