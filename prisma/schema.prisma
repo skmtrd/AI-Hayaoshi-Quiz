@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      =  env("DATABASE_URL")
 }
 
 model User {
@@ -89,14 +89,15 @@ model Authenticator {
 // 部屋
 model Room {
   id        String    @id @default(cuid())
-  name      String
+  theme     String
   users     User[]
+  numberOfUser Int @default(0)
   status    RoomStatus
+  types     String
   currentSolverId String?
-  inviteId  String    @unique
-  category  String?
+  inviteId  String    @unique 
   difficulty Float?
-  anserTimeLimit Int? // ボタンを押してからの制限時間
+  answerTimeLimit Int? // ボタンを押してからの制限時間
   thinkingTimeLimit Int? // 問題が表示されてからの制限時間
   questions Question[]
   currentQuestionId String?
@@ -104,8 +105,16 @@ model Room {
   updatedAt DateTime  @updatedAt
   Result Result[]
 
-  @@index([name])
+  @@index([theme])
 }
+
+enum RoomStatus {
+  WAITING
+  PLAYING
+  FINISHED
+}
+
+
 
 model Question {
   id       String    @id @default(cuid())
@@ -154,8 +163,3 @@ model Result {
   @@index([userId])
 }
 
-enum RoomStatus {
-  WAITING
-  PLAYING
-  FINISHED
-}
