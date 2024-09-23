@@ -6,11 +6,24 @@ import { apiRes } from '@/lib/types';
 import { RoomStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
+//roomテーブルからmaxPlayerカラムを取得
+const getRoomMaxPlayer = async (roomId: string) => {
+  const roomInfos = await prisma.room.findUnique({ where: { id: roomId } });
+  const maxPlayer = roomInfos?.maxPlayer;
+
+  //maxPlayerが部屋作成時に設定されていない場合は最大人数の4人を返す
+  if (!maxPlayer) {
+    return 4;
+  } else {
+    return maxPlayer;
+  }
+};
+
 //部屋への参加api
 export const PUT = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
     await dbConnect();
-    const roomId = req.url.split('/room/')[1];
+    const roomId: string = req.url.split('/room/')[1];
     const userId = await getUserId();
 
     //現在の部屋情報を取得する
@@ -27,14 +40,16 @@ export const PUT = async (req: Request, res: NextResponse) =>
     let updateRoomInfo;
     const currentNumOfUser = roomInfos.numberOfUser;
 
+    const maxPlayer = await getRoomMaxPlayer(roomId);
+
     //既に部屋の人数が最大（4人）の場合
-    if (currentNumOfUser === 4) {
+    if (currentNumOfUser === maxPlayer) {
       return NextResponse.json<apiRes>(
         { message: 'room is full', data: roomInfos },
         { status: 400 },
       );
       //あと一人参加すると最大人数になる場合の処理
-    } else if (currentNumOfUser === 3) {
+    } else if (currentNumOfUser === maxPlayer - 1) {
       updateRoomInfo = await prisma.room.update({
         where: { id: roomId },
         data: { status: RoomStatus.PLAYING, numberOfUser: 4, users: { connect: { id: userId } } },
