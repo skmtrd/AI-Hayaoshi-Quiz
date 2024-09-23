@@ -11,20 +11,24 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Room, User } from '@prisma/client';
+import { Room, RoomUser, User } from '@prisma/client';
 import { ArrowLeft, PlayIcon, Settings } from 'lucide-react';
+import { User as AuthUser } from 'next-auth';
 import Link from 'next/link';
 
 type WaitingScreenProps = {
   room: Room & {
-    users: User[];
+    RoomUser: (RoomUser & {
+      user: User;
+    })[];
   };
-  currentUser: User;
+  currentUser: AuthUser;
 };
 
 export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser }) => {
-  // const isHost = currentUser.id === room.hostId;
-  const isHost = true;
+  const isHost = room.RoomUser.find(
+    (roomUser) => roomUser.user.id === currentUser.id && roomUser.isHost,
+  );
 
   return (
     <Card className='w-96'>
@@ -35,26 +39,29 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser 
               <ArrowLeft className='size-5' />
             </Button>
           </Link>
-          <CardTitle>{room.name}</CardTitle>
+          <CardTitle>{room.theme}</CardTitle>
           <div className='size-10' />
         </div>
       </CardHeader>
       <CardContent className='flex flex-col gap-y-5'>
         <div className='h-2' />
         <p>
-          参加者: {room.users.length} / 8{/* 参加者 : {room.users.length} / {room.maxUsers}*/}
+          参加者: {room.RoomUser.length} / 8{/* 参加者 : {room.users.length} / {room.maxUsers}*/}
         </p>
         <ul
           className='flex max-h-[30vh] flex-col gap-2 overflow-y-auto'
           style={{ scrollbarWidth: 'thin' }}
         >
-          {room.users.map((user) => (
-            <li key={user.id} className='flex items-center gap-2 rounded-md bg-secondary p-2'>
+          {room.RoomUser.map((roomUser) => (
+            <li
+              key={roomUser.user.id}
+              className='flex items-center gap-2 rounded-md bg-secondary p-2'
+            >
               <Avatar className='box-content border border-primary'>
-                <AvatarImage src={user.image ?? ''} />
-                <AvatarFallback>{user.name}</AvatarFallback>
+                <AvatarImage src={roomUser.user.image ?? ''} />
+                <AvatarFallback>{roomUser.user.name}</AvatarFallback>
               </Avatar>
-              {user.name}
+              {roomUser.user.name}
             </li>
           ))}
         </ul>
