@@ -37,7 +37,9 @@ const RoomList = ({ rooms }: { rooms: RoomType[] }) => {
             <CardTitle className='text-lg font-bold'>{room.theme}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className='text-sm text-muted-foreground'>参加者:{room.numberOfUser}/10人</p>
+            <p className='text-sm text-muted-foreground'>
+              参加者:{room.numberOfUser}/{room.maxPlayer}人
+            </p>
             <Button className='mt-2 w-full text-white' onClick={() => handleJoinRoom(room.id)}>
               参加する
             </Button>
