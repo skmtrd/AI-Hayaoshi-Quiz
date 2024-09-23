@@ -60,13 +60,17 @@ export const PUT = async (req: Request, res: NextResponse) =>
     } else if (currentNumOfUser === maxPlayer - 1) {
       updateRoomInfo = await prisma.room.update({
         where: { id: roomId },
-        data: { status: RoomStatus.PLAYING, numberOfUser: 4, users: { connect: { id: userId } } },
+        data: {
+          status: RoomStatus.PLAYING,
+          numberOfUser: 4,
+          RoomUser: { connect: { id: userId } },
+        },
       });
       //部屋の人数が1人,2人のときの処理
     } else {
       updateRoomInfo = await prisma.room.update({
         where: { id: roomId },
-        data: { numberOfUser: currentNumOfUser + 1, users: { connect: { id: userId } } },
+        data: { numberOfUser: currentNumOfUser + 1, RoomUser: { connect: { id: userId } } },
       });
     }
 

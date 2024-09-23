@@ -1,4 +1,5 @@
 import { dbConnect } from '@/lib/dbConnect';
+import { generateQuestions } from '@/lib/generateQuestions';
 import { getUserId } from '@/lib/getUserId';
 import { handleAPIError } from '@/lib/handleAPIError';
 import { prisma } from '@/lib/prisma';
@@ -14,11 +15,32 @@ export const POST = async (req: Request, res: NextResponse) =>
 
     const userId = await getUserId();
 
+    if (!userId) {
+      return NextResponse.json<apiRes>({ message: 'unauthorized', data: null }, { status: 401 });
+    }
+
     const inviteId: string = uuidv4();
+
+    const questions = await generateQuestions(theme, difficulty);
+    if (!questions) {
+      return NextResponse.json<apiRes>(
+        { message: 'failed to generate questions', data: null },
+        { status: 500 },
+      );
+    }
 
     const newRoom = await prisma.room.create({
       data: {
+        ownerId: userId,
         theme,
+        questions: {
+          create: questions.map((question) => ({
+            question: question.question,
+            answer: question.correctAnswer,
+            incorrectAnswers: question.incorrectAnswers,
+            comment: question.comment,
+          })),
+        },
         difficulty,
         answerTimeLimit,
         thinkingTimeLimit,
@@ -27,7 +49,7 @@ export const POST = async (req: Request, res: NextResponse) =>
         numberOfUser: 1,
         inviteId,
         status: RoomStatus.WAITING,
-        users: { connect: { id: userId } },
+        RoomUser: { connect: { id: userId } },
       },
     });
 
