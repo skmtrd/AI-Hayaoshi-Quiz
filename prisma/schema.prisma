@@ -94,6 +94,7 @@ model Room {
   numberOfUser Int @default(0)
   status    RoomStatus
   types     String
+  maxPlayer Int?
   currentSolverId String?
   inviteId  String    @unique 
   difficulty Float?

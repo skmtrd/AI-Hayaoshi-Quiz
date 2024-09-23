@@ -9,7 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 export const POST = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
     await dbConnect();
-    const { theme, difficulty, answerTimeLimit, thinkingTimeLimit, types } = await req.json();
+    const { theme, difficulty, answerTimeLimit, thinkingTimeLimit, types, maxPlayer } =
+      await req.json();
 
     const userId = await getUserId();
     const inviteId: string = uuidv4();
@@ -21,6 +22,7 @@ export const POST = async (req: Request, res: NextResponse) =>
         answerTimeLimit,
         thinkingTimeLimit,
         types,
+        maxPlayer,
         numberOfUser: 1,
         inviteId,
         status: RoomStatus.WAITING,
