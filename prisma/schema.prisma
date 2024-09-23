@@ -133,6 +133,7 @@ model Question {
   id       String    @id @default(cuid())
   question String
   answer   String
+  incorrectAnswers String[]
   comment  String
   room     Room      @relation(fields: [roomId], references: [id])
   roomId   String
