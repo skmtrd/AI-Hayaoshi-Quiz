@@ -7,15 +7,23 @@ import { RoomStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 //roomテーブルからmaxPlayerカラムを取得
+//これはPUTのApiで使用している関数
 const getRoomMaxPlayer = async (roomId: string) => {
-  const roomInfos = await prisma.room.findUnique({ where: { id: roomId } });
-  const maxPlayer = roomInfos?.maxPlayer;
+  try {
+    dbConnect();
+    const roomInfos = await prisma.room.findUnique({ where: { id: roomId } });
+    const maxPlayer = roomInfos?.maxPlayer;
 
-  //maxPlayerが部屋作成時に設定されていない場合は最大人数の4人を返す
-  if (!maxPlayer) {
-    return 4;
-  } else {
-    return maxPlayer;
+    //maxPlayerが部屋作成時に設定されていない場合は最大人数の4人を返す
+    if (!maxPlayer) {
+      return 4;
+    } else {
+      return maxPlayer;
+    }
+  } catch (error) {
+    throw error;
+  } finally {
+    prisma.$disconnect();
   }
 };
 
@@ -23,7 +31,7 @@ const getRoomMaxPlayer = async (roomId: string) => {
 export const PUT = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
     await dbConnect();
-    const roomId: string = req.url.split('/room/')[1];
+    const roomId: string = req.url.split('/')[5];
     const userId = await getUserId();
 
     //現在の部屋情報を取得する

@@ -13,6 +13,7 @@ export const POST = async (req: Request, res: NextResponse) =>
       await req.json();
 
     const userId = await getUserId();
+
     const inviteId: string = uuidv4();
 
     const newRoom = await prisma.room.create({
