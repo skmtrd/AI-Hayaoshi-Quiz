@@ -14,7 +14,7 @@ export const PUT = async (req: Request, res: NextResponse) =>
     //現在の部屋情報を取得する
     const roomInfos = await prisma.room.findUnique({
       where: { id: roomId },
-      include: { users: { where: { id: userId } } },
+      include: { RoomUser: { where: { id: userId } } },
     });
 
     //部屋が存在しない場合の処理(この処理がないとroomInfosの型エラーが発生する)
@@ -23,7 +23,7 @@ export const PUT = async (req: Request, res: NextResponse) =>
     }
 
     //部屋に参加してないユーザーが退室しようとした場合
-    if (roomInfos.users.length == 0) {
+    if (roomInfos.RoomUser.length == 0) {
       return NextResponse.json<apiRes>(
         { message: 'you not joined', data: roomInfos },
         { status: 400 },
@@ -33,7 +33,7 @@ export const PUT = async (req: Request, res: NextResponse) =>
     //ユーザー退室の処理
     const updateRoom = await prisma.room.update({
       where: { id: roomId },
-      data: { numberOfUser: roomInfos.numberOfUser - 1, users: { disconnect: { id: userId } } },
+      data: { numberOfUser: roomInfos.numberOfUser - 1, RoomUser: { disconnect: { id: userId } } },
     });
 
     //部屋の人数が０人に成ったら、部屋を削除する。
