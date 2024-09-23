@@ -5,6 +5,7 @@ export const RoomSchema = z.object({
   theme: z.string().nullable(),
   status: z.enum(['WAITING', 'PLAYING', 'FINISHED']),
   numberOfUser: z.number().nullable(),
+  maxPlayer: z.number().nullable(),
   types: z.string().nullable(),
   currentSolverId: z.string().nullable(),
   inviteId: z.string(),

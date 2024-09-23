@@ -31,6 +31,7 @@ const createRoom = async (params: {
   answerTimeLimit: number;
   thinkingTimeLimit: number;
   types: string;
+  maxPlayer: number;
 }) => {
   const res = await fetch('/api/room', {
     method: 'POST',
@@ -44,6 +45,7 @@ const CreateRoomButton = () => {
   const [difficulty, setDifficulty] = useState('');
   const [time, setTime] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
+  const [maxPlayer, setMaxPlayer] = useState('');
   const router = useRouter();
 
   const handleSubmit = async () => {
@@ -56,6 +58,7 @@ const CreateRoomButton = () => {
       answerTimeLimit,
       thinkingTimeLimit: 30,
       types,
+      maxPlayer: Number(maxPlayer),
     });
     router.push(`/room/${res.data.newRoom.id}`);
   };
@@ -126,11 +129,33 @@ const CreateRoomButton = () => {
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              <p className='absolute mt-2 text-right text-xs text-muted-foreground'>
+              <p className='absolute mt-1 text-right text-xs text-muted-foreground'>
                 ボタンを押してからの猶予
               </p>
             </div>
           </div>
+          <div className='mt-3 grid grid-cols-4 items-center gap-4'>
+            <Label htmlFor='time' className='text-center font-bold'>
+              最大人数
+            </Label>
+            <div></div>
+            <div>
+              <Select value={maxPlayer} onValueChange={(value) => setMaxPlayer(value)}>
+                <SelectTrigger className='w-[180px]'>
+                  <SelectValue placeholder='最大人数を選択' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>最大人数</SelectLabel>
+                    <SelectItem value='2'>2人</SelectItem>
+                    <SelectItem value='3'>3人</SelectItem>
+                    <SelectItem value='4'>4人</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className='mt-3 grid grid-cols-4 items-center gap-4'>
             <div className='grid place-items-center'>
               <Label htmlFor='private' className='whitespace-nowrap font-bold'>
@@ -148,6 +173,7 @@ const CreateRoomButton = () => {
             </div>
           </div>
         </div>
+
         <DialogFooter>
           <Button type='button' onClick={handleSubmit}>
             作成
