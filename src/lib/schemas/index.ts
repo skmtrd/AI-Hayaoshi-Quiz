@@ -2,7 +2,8 @@ import { z } from 'zod';
 
 export const RoomSchema = z.object({
   id: z.string(),
-  theme: z.string().nullable(),
+  theme: z.string(),
+  ownerId: z.string(),
   status: z.enum(['WAITING', 'PLAYING', 'FINISHED']),
   numberOfUser: z.number().nullable(),
   maxPlayer: z.number().nullable(),
@@ -58,6 +59,16 @@ export const ResultSchema = z.object({
   roomId: z.string(),
   userId: z.string(),
   ratingDelta: z.number().nullable().default(0),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+// 新しく追加されたRoomUserスキーマ
+export const RoomUserSchema = z.object({
+  id: z.string(),
+  roomId: z.string(),
+  userId: z.string(),
+  isHost: z.boolean().default(false),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
