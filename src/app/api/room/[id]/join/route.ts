@@ -14,7 +14,7 @@ const getRoomMaxPlayer = async (roomId: string) => {
     const roomInfos = await prisma.room.findUnique({ where: { id: roomId } });
     const maxPlayer = roomInfos?.maxPlayer;
 
-    //maxPlayerが部屋作成時に設定されていない場合は最大人数の4人を返す
+    //maxPlayerが部屋作成時に設定されていない場合は最大人数(4人)を返す
     if (!maxPlayer) {
       return 4;
     } else {
