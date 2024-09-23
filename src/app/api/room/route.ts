@@ -28,10 +28,13 @@ export const POST = async (req: Request, res: NextResponse) =>
       },
     });
 
-    return NextResponse.json<apiRes>({
-      message: 'room created',
-      data: { inviteId: inviteId, newRoom: newRoom },
-    });
+    return NextResponse.json<apiRes>(
+      {
+        message: 'room created',
+        data: { inviteId: inviteId, newRoom: newRoom },
+      },
+      { status: 200 },
+    );
   });
 
 export const GET = async (req: Request, res: NextResponse) =>
