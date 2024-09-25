@@ -14,9 +14,11 @@ export const POST = async (req: Request, res: NextResponse) =>
       await req.json();
 
     const userId = await getUserId();
+
     if (!userId) {
       return NextResponse.json<apiRes>({ message: 'unauthorized', data: null }, { status: 401 });
     }
+
     const inviteId: string = uuidv4();
 
     const questions = await generateQuestions(theme, difficulty);
