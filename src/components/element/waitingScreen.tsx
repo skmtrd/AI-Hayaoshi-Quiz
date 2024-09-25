@@ -12,9 +12,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Room, RoomUser, User } from '@prisma/client';
-import { ArrowLeft, PlayIcon, Settings } from 'lucide-react';
+import { ArrowLeft, Flag, PlayIcon, Settings } from 'lucide-react';
 import { User as AuthUser } from 'next-auth';
 import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
 
 type WaitingScreenProps = {
   room: Room & {
@@ -29,6 +30,15 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser 
   const isHost = room.RoomUser.find(
     (roomUser) => roomUser.user.id === currentUser.id && roomUser.isHost,
   );
+
+  const [dots, setDots] = useState(1);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots((prevDots) => (prevDots % 3) + 1);
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Card className='w-96'>
@@ -45,8 +55,8 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser 
       </CardHeader>
       <CardContent className='flex flex-col gap-y-5'>
         <div className='h-2' />
-        <p>
-          参加者: {room.RoomUser.length} / 8{/* 参加者 : {room.users.length} / {room.maxUsers}*/}
+        <p className='text-lg font-medium'>
+          参加者: {room.RoomUser.length} / {room.maxPlayer}
         </p>
         <ul
           className='flex max-h-[30vh] flex-col gap-2 overflow-y-auto'
@@ -55,13 +65,16 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser 
           {room.RoomUser.map((roomUser) => (
             <li
               key={roomUser.user.id}
-              className='flex items-center gap-2 rounded-md bg-secondary p-2'
+              className='flex items-center justify-between gap-2 rounded-md bg-secondary px-4 py-2'
             >
-              <Avatar className='box-content border border-primary'>
-                <AvatarImage src={roomUser.user.image ?? ''} />
-                <AvatarFallback>{roomUser.user.name}</AvatarFallback>
-              </Avatar>
-              {roomUser.user.name}
+              <div className='flex items-center gap-2'>
+                <Avatar className='box-content border border-primary'>
+                  <AvatarImage src={roomUser.user.image ?? ''} />
+                  <AvatarFallback>{roomUser.user.name}</AvatarFallback>
+                </Avatar>
+                {roomUser.user.name}
+              </div>
+              {roomUser.isHost && <Flag fill='orange' />}
             </li>
           ))}
         </ul>
@@ -87,11 +100,16 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser 
             </AccordionItem>
           </Accordion>
         )}
+        {!isHost && (
+          <div className='mt-4 flex items-center justify-center text-muted-foreground'>
+            ホストが開始するのをお待ちください{'.'.repeat(dots)}
+          </div>
+        )}
       </CardContent>
       <CardFooter>
         {isHost && (
-          <Button>
-            <PlayIcon />
+          <Button className='flex items-center justify-center gap-2'>
+            <PlayIcon size={16} />
             スタート
           </Button>
         )}
