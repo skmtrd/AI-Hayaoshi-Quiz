@@ -3,14 +3,16 @@ import { OpenAI } from 'openai';
 import { zodResponseFormat } from 'openai/helpers/zod';
 import { z } from 'zod';
 
-const responseSchema = z.array(
-  z.object({
-    question: z.string(),
-    correctAnswer: z.string(),
-    incorrectAnswers: z.array(z.string()),
-    comment: z.string(),
-  }),
-);
+const responseSchema = z.object({
+  quiz: z.array(
+    z.object({
+      question: z.string(),
+      correctAnswer: z.string(),
+      incorrectAnswers: z.array(z.string()),
+      comment: z.string(),
+    }),
+  ),
+});
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -43,10 +45,18 @@ export const generateQuestions = async (theme: string, difficulty: number) => {
 
   それでは、クイズを作成してください。
   `;
-  const response = await client.beta.chat.completions.parse({
-    model: 'gpt-4o-2024-08-06',
-    messages: [{ role: 'system', content: prompt }],
-    response_format: zodResponseFormat(responseSchema, 'quiz'),
-  });
-  return response.choices[0].message.parsed;
+  const response = await client.beta.chat.completions
+    .parse({
+      model: 'gpt-4o-2024-08-06',
+      messages: [{ role: 'system', content: prompt }],
+      response_format: zodResponseFormat(responseSchema, 'quiz'),
+    })
+    .catch((error) => {
+      console.error('Error generating questions:', error);
+      throw new Error('クイズの生成中にエラーが発生しました。');
+    });
+  if (!response || !response?.choices?.[0]?.message?.parsed) {
+    throw new Error('無効な応答形式です。');
+  }
+  return response.choices[0].message.parsed.quiz;
 };
