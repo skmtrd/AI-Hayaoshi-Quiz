@@ -22,8 +22,11 @@ const RoomList = ({ rooms }: { rooms: RoomType[] }) => {
   const router = useRouter();
   const handleJoinRoom = async (roomId: string) => {
     const res = await joinRoom(roomId);
+    console.log(res);
     if (res.message === 'join success') {
-      router.push(`/room/${res.data.newRoom.id}`);
+      router.push(`/room/${res.data.id}`);
+    } else if (res.message === 'room not exits') {
+      toast.error('部屋が存在しません');
     } else if (res.message === 'room is full') {
       toast.error('部屋が満員です');
     }

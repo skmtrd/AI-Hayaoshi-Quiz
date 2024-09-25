@@ -34,7 +34,7 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser 
     <Card className='w-96'>
       <CardHeader className='border-b border-border p-3'>
         <div className='flex w-full items-center justify-between'>
-          <Link href='/' passHref>
+          <Link href='/room' passHref>
             <Button variant='ghost' size='icon'>
               <ArrowLeft className='size-5' />
             </Button>
