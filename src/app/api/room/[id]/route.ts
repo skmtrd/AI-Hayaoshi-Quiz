@@ -18,12 +18,29 @@ export const PUT = async (req: Request, res: NextResponse) =>
   });
 
 //部屋の情報取得api
-export const GET = async (req: Request, res: NextResponse) =>
+export const GET = async (
+  req: Request,
+  { params }: { params: { id: string } },
+  res: NextResponse,
+) =>
   handleAPIError(async () => {
     await dbConnect();
-    const getRooms = await prisma.room.findMany({
-      orderBy: { createdAt: 'desc' },
+
+    if (!params.id) {
+      return NextResponse.json<apiRes>(
+        { message: 'room id is required', data: null },
+        { status: 400 },
+      );
+    }
+
+    const room = await prisma.room.findUnique({
+      where: {
+        id: params.id,
+      },
     });
 
-    return NextResponse.json<apiRes>({ message: 'success', data: getRooms }, { status: 200 });
+    if (!room) {
+      return NextResponse.json<apiRes>({ message: 'not found id' }, { status: 404 });
+    }
+    return NextResponse.json<apiRes>({ message: 'success', data: room }, { status: 200 });
   });
