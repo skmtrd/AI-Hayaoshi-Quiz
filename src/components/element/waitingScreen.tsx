@@ -1,5 +1,6 @@
 'use client';
 
+import LeaveRoomButton from '@/components/element/LeaveRoomButton';
 import {
   Accordion,
   AccordionContent,
@@ -12,9 +13,9 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Room, RoomUser, User } from '@prisma/client';
-import { ArrowLeft, Flag, PlayIcon, Settings } from 'lucide-react';
+import { Flag, PlayIcon, Settings } from 'lucide-react';
 import { User as AuthUser } from 'next-auth';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 type WaitingScreenProps = {
@@ -26,7 +27,15 @@ type WaitingScreenProps = {
   currentUser: AuthUser;
 };
 
+const leaveRoom = async (roomId: string) => {
+  const res = await fetch(`/api/room/${roomId}/leave`, {
+    method: 'PUT',
+  });
+  return res.json();
+};
+
 export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser }) => {
+  const router = useRouter();
   const isHost = room.RoomUser.find(
     (roomUser) => roomUser.user.id === currentUser.id && roomUser.isHost,
   );
@@ -40,15 +49,24 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser 
     return () => clearInterval(interval);
   }, []);
 
+  const handleLeaveRoom = async () => {
+    const res = await leaveRoom(room.id);
+    if (res.message === 'success leave') {
+      router.push('/rooms');
+    } else if (res.message === 'room is deleted') {
+      router.push('/rooms');
+    } else if (res.message === 'you not joined') {
+      router.push('/rooms');
+    } else if (res.message === 'room not exits') {
+      router.push('/rooms');
+    }
+  };
+
   return (
     <Card className='w-96'>
       <CardHeader className='border-b border-border p-3'>
         <div className='flex w-full items-center justify-between'>
-          <Link href='/room' passHref>
-            <Button variant='ghost' size='icon'>
-              <ArrowLeft className='size-5' />
-            </Button>
-          </Link>
+          <LeaveRoomButton roomId={room.id} />
           <CardTitle>{room.theme}</CardTitle>
           <div className='size-10' />
         </div>
@@ -108,8 +126,8 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser 
       </CardContent>
       <CardFooter>
         {isHost && (
-          <Button className='flex items-center justify-center gap-2'>
-            <PlayIcon size={16} />
+          <Button className='flex items-center justify-center gap-1 font-semibold'>
+            <PlayIcon size={16} fill='white' />
             スタート
           </Button>
         )}

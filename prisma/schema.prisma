@@ -95,6 +95,8 @@ model RoomUser {
   isHost    Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  @@unique([userId, roomId])
 }
 
 // 部屋
