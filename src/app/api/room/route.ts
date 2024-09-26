@@ -20,7 +20,7 @@ export const POST = async (req: Request, res: NextResponse) =>
     }
 
     const inviteId: string = uuidv4();
-
+    console.log(theme, difficulty);
     const questions = await generateQuestions(theme, difficulty);
     if (!questions) {
       return NextResponse.json<apiRes>(
@@ -28,6 +28,8 @@ export const POST = async (req: Request, res: NextResponse) =>
         { status: 500 },
       );
     }
+
+    console.log(questions);
 
     const newRoom = await prisma.room.create({
       data: {
@@ -49,7 +51,14 @@ export const POST = async (req: Request, res: NextResponse) =>
         numberOfUser: 1,
         inviteId,
         status: RoomStatus.WAITING,
-        RoomUser: { connect: { id: userId } },
+      },
+    });
+
+    const roomUser = await prisma.roomUser.create({
+      data: {
+        isHost: true,
+        room: { connect: { id: newRoom.id } },
+        user: { connect: { id: userId } },
       },
     });
 

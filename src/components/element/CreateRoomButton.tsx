@@ -33,7 +33,7 @@ const createRoom = async (params: {
   types: string;
   maxPlayer: number;
 }) => {
-  const res = await fetch('/api/room', {
+  const res = await fetch('/api/room/', {
     method: 'POST',
     body: JSON.stringify(params),
   });

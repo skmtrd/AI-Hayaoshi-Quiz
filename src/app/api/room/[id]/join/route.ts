@@ -37,7 +37,18 @@ export const PUT = async (req: Request, res: NextResponse) =>
     //現在の部屋情報を取得する
     const roomInfos = await prisma.room.findUnique({
       where: { id: roomId },
+      include: {
+        RoomUser: true,
+      },
     });
+
+    //ユーザーが既に部屋に参加している場合
+    if (roomInfos?.RoomUser.find((roomUser) => roomUser.userId === userId)) {
+      return NextResponse.json<apiRes>(
+        { message: 'join success', data: roomInfos },
+        { status: 200 },
+      );
+    }
 
     //部屋が存在しない場合の処理(この処理がないとroomInfosの型エラーが発生する)
     if (!roomInfos) {
@@ -62,17 +73,24 @@ export const PUT = async (req: Request, res: NextResponse) =>
         where: { id: roomId },
         data: {
           status: RoomStatus.PLAYING,
-          numberOfUser: 4,
-          RoomUser: { connect: { id: userId } },
+          numberOfUser: maxPlayer,
         },
       });
       //部屋の人数が1人,2人のときの処理
     } else {
       updateRoomInfo = await prisma.room.update({
         where: { id: roomId },
-        data: { numberOfUser: currentNumOfUser + 1, RoomUser: { connect: { id: userId } } },
+        data: { numberOfUser: currentNumOfUser + 1 },
       });
     }
+
+    const roomUser = await prisma.roomUser.create({
+      data: {
+        isHost: false,
+        room: { connect: { id: roomId } },
+        user: { connect: { id: userId } },
+      },
+    });
 
     return NextResponse.json<apiRes>(
       { message: 'join success', data: updateRoomInfo },
