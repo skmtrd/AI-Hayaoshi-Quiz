@@ -66,7 +66,12 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser 
     <Card className='w-96'>
       <CardHeader className='border-b border-border p-3'>
         <div className='flex w-full items-center justify-between'>
-          <LeaveRoomButton roomId={room.id} />
+          <LeaveRoomButton
+            roomId={room.id}
+            isHost={
+              room.RoomUser.find((roomUser) => roomUser.userId === currentUser.id)?.isHost ?? false
+            }
+          />
           <CardTitle>{room.theme}</CardTitle>
           <div className='size-10' />
         </div>

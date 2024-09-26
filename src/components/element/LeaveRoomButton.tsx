@@ -3,6 +3,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -19,7 +20,7 @@ const leaveRoom = async (roomId: string) => {
   return res.json();
 };
 
-const LeaveRoomButton = ({ roomId }: { roomId: string }) => {
+const LeaveRoomButton = ({ roomId, isHost }: { roomId: string; isHost: boolean }) => {
   const router = useRouter();
   const handleLeaveRoom = async () => {
     const res = await leaveRoom(roomId);
@@ -44,13 +45,13 @@ const LeaveRoomButton = ({ roomId }: { roomId: string }) => {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>本当に部屋を退室しますか？</AlertDialogTitle>
-          {/* <AlertDialogDescription>
-            
-          </AlertDialogDescription> */}
+          {isHost && (
+            <AlertDialogDescription>ホストが退室すると部屋が削除されます</AlertDialogDescription>
+          )}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleLeaveRoom}>Continue</AlertDialogAction>
+          <AlertDialogCancel>戻る</AlertDialogCancel>
+          <AlertDialogAction onClick={handleLeaveRoom}>退室する</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
