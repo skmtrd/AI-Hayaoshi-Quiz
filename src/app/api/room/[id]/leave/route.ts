@@ -23,7 +23,7 @@ export const PUT = async (req: Request, res: NextResponse) =>
     }
 
     //部屋に参加してないユーザーが退室しようとした場合
-    if (roomInfos.RoomUser.length == 0) {
+    if (roomInfos.RoomUser.length === 0) {
       return NextResponse.json<apiRes>(
         { message: 'you not joined', data: roomInfos },
         { status: 400 },
@@ -36,8 +36,11 @@ export const PUT = async (req: Request, res: NextResponse) =>
       data: { numberOfUser: roomInfos.numberOfUser - 1, RoomUser: { disconnect: { id: userId } } },
     });
 
-    //部屋の人数が０人に成ったら、部屋を削除する。
-    if (roomInfos.numberOfUser - 1 == 0) {
+    //部屋の人数が０人に成ったら、もしくは部屋のホストが退室したら、部屋を削除する。
+    if (
+      roomInfos.numberOfUser - 1 === 0 ||
+      roomInfos.RoomUser.find((roomUser) => roomUser.id === userId)?.isHost
+    ) {
       const deleteRoom = await prisma.room.delete({
         where: {
           id: roomId,
