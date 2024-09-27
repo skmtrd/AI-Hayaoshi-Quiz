@@ -17,7 +17,7 @@ export const Header = async () => {
     <header className='sticky top-0 z-50 border-b bg-white backdrop-blur-md'>
       <div className='mx-auto flex items-center justify-between px-14 py-4 text-2xl font-bold'>
         <div className='size-10'></div>
-        <Link href='/' className='text-primary'>
+        <Link href='/room' className='text-primary'>
           AI早押しバトル
         </Link>
         <DropdownMenu>
