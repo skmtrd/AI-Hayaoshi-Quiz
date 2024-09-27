@@ -24,7 +24,11 @@ export const GET = async (
         id: params.id,
       },
       include: {
-        results: true,
+        results: {
+          include: {
+            room: true,
+          },
+        },
       },
     });
 
