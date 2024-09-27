@@ -1,4 +1,4 @@
-import { auth } from '@/auth';
+import { auth, signIn } from '@/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Brain, Gamepad, Users } from 'lucide-react';
@@ -42,14 +42,19 @@ export default async function Home() {
             楽しみながら知識が身につく、新しい学習体験が待っています！
           </p>
           {!session?.user ? (
-            <Link href='/api/auth/signin' className='block w-full sm:w-auto'>
-              <Button size='lg' className='w-full sm:w-auto'>
+            <form
+              action={async () => {
+                'use server';
+                await signIn('google');
+              }}
+            >
+              <Button size='lg' className='w-full sm:w-min'>
                 今すぐ始める <ArrowRight className='ml-2 size-4' />
               </Button>
-            </Link>
+            </form>
           ) : (
-            <Link href='/room' className='block w-full sm:w-auto'>
-              <Button size='lg' className='w-full sm:w-auto'>
+            <Link href='/room' className='block w-full sm:w-min'>
+              <Button size='lg' className='w-full sm:w-min'>
                 ルームに参加する <ArrowRight className='ml-2 size-4' />
               </Button>
             </Link>
