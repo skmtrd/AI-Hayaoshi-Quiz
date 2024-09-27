@@ -13,7 +13,7 @@ export const RoomSchema = z.object({
   difficulty: z.number().nullable(),
   answerTimeLimit: z.number().nullable(),
   thinkingTimeLimit: z.number().nullable(),
-  currentQuestionId: z.string().nullable(),
+  currentQuestionIndex: z.number().nullable(),
   buttonTimeStamp: z.number().nullable(),
   questionOpenTimeStamp: z.number().nullable(),
   createdAt: z.string(),
