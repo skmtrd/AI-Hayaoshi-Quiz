@@ -12,14 +12,26 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import useRoomData from '@/hooks/SWR/useRoomData';
+import { RoomSchema, RoomUserSchema, UserSchema } from '@/lib/schemas';
 import { Flag, PlayIcon, Settings } from 'lucide-react';
 import { User as AuthUser } from 'next-auth';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import { z } from 'zod';
+
+const RoomUserWithUserSchema = RoomUserSchema.extend({
+  user: UserSchema,
+});
+
+const RoomWithRoomUserSchema = RoomSchema.extend({
+  RoomUser: z.array(RoomUserWithUserSchema),
+});
+
+type RoomInfoType = z.infer<typeof RoomWithRoomUserSchema>;
 
 type WaitingScreenProps = {
   currentUser: AuthUser;
+  roomInfo: RoomInfoType;
 };
 
 const leaveRoom = async (roomId: string) => {
@@ -29,10 +41,16 @@ const leaveRoom = async (roomId: string) => {
   return res.json();
 };
 
-export const WaitingScreen: React.FC<WaitingScreenProps> = ({ currentUser }) => {
+export const WaitingScreen: React.FC<WaitingScreenProps> = ({ currentUser, roomInfo }) => {
   const router = useRouter();
   const roomId = usePathname().split('room/')[1];
-  const { roomInfo, isError, isLoading, mutate } = useRoomData(roomId);
+
+  const handleStartGame = async () => {
+    const res = await fetch(`/api/room/${roomId}/start`, {
+      method: 'PUT',
+    });
+  };
+
   const [dots, setDots] = useState(1);
   useEffect(() => {
     const interval = setInterval(() => {
@@ -40,7 +58,7 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ currentUser }) => 
     }, 500);
     return () => clearInterval(interval);
   }, []);
-  if (!roomInfo || isError || isLoading) {
+  if (!roomInfo) {
     return <div>loading...</div>;
   }
 
@@ -129,7 +147,10 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ currentUser }) => 
       </CardContent>
       <CardFooter>
         {isHost && (
-          <Button className='flex items-center justify-center gap-1 font-semibold'>
+          <Button
+            onClick={handleStartGame}
+            className='flex items-center justify-center gap-1 font-semibold'
+          >
             <PlayIcon size={16} fill='white' />
             スタート
           </Button>

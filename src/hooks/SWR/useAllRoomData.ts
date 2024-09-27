@@ -8,8 +8,8 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const useAllRoomData = () => {
   const { data, error, isLoading, mutate } = useSWR('/api/room', fetcher, {
-    refreshInterval: 1000,
     revalidateOnFocus: true,
+    refleshInterval: 1000,
   });
   const RoomsSchema = z.array(RoomSchema);
 

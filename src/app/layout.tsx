@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <SessionProvider>
       <html lang='en'>
-        <body className='overflow-hidden'>
+        <body className=''>
           <Layout>{children}</Layout>
         </body>
       </html>

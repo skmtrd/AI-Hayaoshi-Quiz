@@ -8,8 +8,8 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const useAllRoomData = (roomId: string) => {
   const { data, error, isLoading, mutate } = useSWR(`/api/room/${roomId}`, fetcher, {
-    refreshInterval: 1000,
     revalidateOnFocus: true,
+    refleshInterval: 1000,
   });
 
   const RoomUserWithUserSchema = RoomUserSchema.extend({
