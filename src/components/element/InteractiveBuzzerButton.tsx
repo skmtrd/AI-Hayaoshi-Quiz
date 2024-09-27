@@ -28,7 +28,7 @@ function BuzzerButton({ onClick, isPressed }: BuzzerButtonProps) {
   );
 }
 
-export default function InteractiveBuzzerButton() {
+export default function InteractiveBuzzerButton({ onClick }: { onClick: () => void }) {
   const [isPressed, setIsPressed] = useState(false);
 
   const handleClick = () => {
@@ -37,7 +37,7 @@ export default function InteractiveBuzzerButton() {
   };
 
   return (
-    <div className='p-4'>
+    <div onClick={onClick} className='p-4'>
       <BuzzerButton onClick={handleClick} isPressed={isPressed} />
     </div>
   );

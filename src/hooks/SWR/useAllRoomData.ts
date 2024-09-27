@@ -9,7 +9,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const useAllRoomData = () => {
   const { data, error, isLoading, mutate } = useSWR('/api/room', fetcher, {
     revalidateOnFocus: true,
-    refleshInterval: 1000,
+    refreshInterval: 1000,
   });
   const RoomsSchema = z.array(RoomSchema);
 

@@ -1,6 +1,6 @@
 'use client';
 import MatchingScreen from '@/components/element/MatchingScreen';
-import { WaitingScreen } from '@/components/element/waitingScreen';
+import { WaitingScreen } from '@/components/element/WaitingScreen';
 import useRoomData from '@/hooks/SWR/useRoomData';
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';

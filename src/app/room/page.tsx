@@ -5,7 +5,15 @@ import RoomList from '@/components/element/RoomList';
 import useAllRoomData from '@/hooks/SWR/useAllRoomData';
 
 const Room = () => {
-  const { rooms, isError, isLoading } = useAllRoomData();
+  const { rooms, isError, isLoading, mutate } = useAllRoomData();
+
+  // useEffect(() => {
+  //   let interval;
+  //   interval = setInterval(() => {
+  //     mutate();
+  //   }, 500);
+  //   return () => clearInterval(interval);
+  // }, [mutate]);
 
   if (isLoading || !rooms) return <div>Loading...</div>;
   if (isError) return <div>Error</div>;
