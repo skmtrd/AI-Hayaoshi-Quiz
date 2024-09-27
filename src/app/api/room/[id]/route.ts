@@ -5,15 +5,13 @@ import { apiRes } from '@/lib/types';
 import { NextResponse } from 'next/server';
 
 //部屋の情報取得api
-export const GET = async (
-  req: Request,
-  { params }: { params: { id: string } },
-  res: NextResponse,
-) =>
+export const GET = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
+    console.log('passmedkonldknsjnj');
     await dbConnect();
+    const roomId: string = req.url.split('room/')[1];
 
-    if (!params.id) {
+    if (!roomId) {
       return NextResponse.json<apiRes>(
         { message: 'room id is required', data: null },
         { status: 400 },
@@ -22,7 +20,14 @@ export const GET = async (
 
     const room = await prisma.room.findUnique({
       where: {
-        id: params.id,
+        id: roomId,
+      },
+      include: {
+        RoomUser: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
