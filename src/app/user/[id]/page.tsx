@@ -1,13 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserWithResultsSchema } from '@/lib/schemas';
+import { UserProfileSchema } from '@/lib/schemas';
 import { cn } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
 const getUser = async (id: string) => {
   const res = await fetch(`http://localhost:3000/api/user/${id}`);
   const data = await res.json();
-  const parsedData = UserWithResultsSchema.parse(data?.data);
+  const parsedData = UserProfileSchema.parse(data?.data);
   return parsedData;
 };
 
@@ -18,9 +18,18 @@ const UserPage = async ({ params }: { params: { id: string } }) => {
     redirect('/');
   }
 
+  const winRate =
+    user.results.length > 0
+      ? Math.round(
+          (user.results.filter((result) => result.ratingDelta && result.ratingDelta > 0).length /
+            user.results.length) *
+            100,
+        )
+      : 0;
+
   return (
     <div className='mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center justify-center gap-y-10 px-4'>
-      <Card className='w-full max-w-2xl'>
+      <Card className='max-h-full w-full max-w-2xl'>
         <CardHeader>
           <div className='flex items-center'>
             <Avatar className='mr-4 size-24'>
@@ -28,57 +37,96 @@ const UserPage = async ({ params }: { params: { id: string } }) => {
               <AvatarFallback>{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle>{user.name}</CardTitle>
-              <CardDescription>{user.email}</CardDescription>
+              <CardTitle className='mb-1 text-2xl'>{user.name}</CardTitle>
+              <CardDescription className='text-sm'>{user.email}</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className='mb-4'>
+          <div className='mb-6 grid grid-cols-2 gap-4'>
             <p>
-              <span className='font-semibold'>評価:</span> {user.rating}
+              <span className='font-semibold text-gray-600'>レーティング:</span>{' '}
+              <span className='text-lg'>{user.rating}</span>
             </p>
             <p>
-              <span className='font-semibold'>作成日:</span>{' '}
-              {new Date(user.createdAt).toLocaleDateString('ja-JP')}
+              <span className='font-semibold text-gray-600'>勝率:</span>{' '}
+              <span
+                className={cn(
+                  'text-lg font-semibold',
+                  winRate === 50
+                    ? 'text-gray-500'
+                    : winRate > 50
+                      ? 'text-green-600'
+                      : 'text-red-600',
+                )}
+              >
+                {winRate}%
+              </span>
             </p>
             <p>
-              <span className='font-semibold'>更新日:</span>{' '}
-              {new Date(user.updatedAt).toLocaleDateString('ja-JP')}
+              <span className='font-semibold text-gray-600'>作成日:</span>{' '}
+              <span className='text-sm'>
+                {new Date(user.createdAt).toLocaleDateString('ja-JP')}
+              </span>
+            </p>
+            <p>
+              <span className='font-semibold text-gray-600'>更新日:</span>{' '}
+              <span className='text-sm'>
+                {new Date(user.updatedAt).toLocaleDateString('ja-JP')}
+              </span>
             </p>
           </div>
           {user.results.length > 0 ? (
             <div>
-              <h2 className='mb-2 text-xl font-semibold'>最近のマッチ履歴</h2>
-              <ul className='space-y-4'>
-                {user.results.map((result: any) => (
+              <h2 className='mb-4 text-xl font-semibold text-gray-800'>
+                最近のマッチ履歴
+                <span className='ml-2 text-sm text-muted-foreground'>
+                  ({user.results.length}件)
+                </span>
+              </h2>
+              <ul className='max-h-96 space-y-4 overflow-y-auto'>
+                {user.results.map((result) => (
                   <li
                     key={result.id}
                     className={cn(
-                      result.ratingDelta > 0 ? 'bg-green-50' : 'bg-red-50',
-                      'rounded-md border border-border p-2',
+                      result.ratingDelta
+                        ? result.ratingDelta > 0
+                          ? 'bg-green-50'
+                          : 'bg-red-50'
+                        : 'bg-gray-50',
+                      'rounded-lg border border-gray-200 p-3 shadow-sm',
                     )}
                   >
-                    <p>
-                      <span className='font-semibold'>ルームID:</span> {result.roomId}
-                    </p>
-                    <p>
-                      <span className='font-semibold'>レーティング変動:</span>{' '}
-                      <span className={result.ratingDelta > 0 ? 'text-green-500' : 'text-red-500'}>
-                        {result.ratingDelta > 0 ? '+' : ''}
-                        {result.ratingDelta}
-                      </span>
-                    </p>
-                    <p>
-                      <span className='font-semibold'>日時:</span>{' '}
-                      {new Date(result.createdAt).toLocaleString('ja-JP')}
-                    </p>
+                    <p className='mb-2 text-lg font-medium'>{result.room.theme}</p>
+                    <div className='flex items-center justify-between'>
+                      <p>
+                        <span className='font-semibold text-muted-foreground'>
+                          レーティング変動:
+                        </span>{' '}
+                        <span
+                          className={cn(
+                            'font-bold',
+                            result.ratingDelta
+                              ? result.ratingDelta > 0
+                                ? 'text-green-600'
+                                : 'text-red-600'
+                              : 'text-muted-foreground',
+                          )}
+                        >
+                          {result.ratingDelta && result.ratingDelta > 0 ? '+' : ''}
+                          {result.ratingDelta}
+                        </span>
+                      </p>
+                      <p className='text-sm text-muted-foreground'>
+                        {new Date(result.createdAt).toLocaleString('ja-JP')}
+                      </p>
+                    </div>
                   </li>
                 ))}
               </ul>
             </div>
           ) : (
-            <p className='text-muted-foreground'>まだマッチ履歴がありません。</p>
+            <p className='italic text-muted-foreground'>まだマッチ履歴がありません。</p>
           )}
         </CardContent>
       </Card>
