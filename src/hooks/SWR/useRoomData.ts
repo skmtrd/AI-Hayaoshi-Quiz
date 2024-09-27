@@ -1,6 +1,6 @@
 'use client';
 
-import { RoomSchema, RoomUserSchema, UserSchema } from '@/lib/schemas';
+import { RoomWithRoomUserAndUserAndQuestionSchema } from '@/lib/schemas';
 import useSWR from 'swr';
 import { z, ZodError } from 'zod';
 
@@ -9,24 +9,16 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const useAllRoomData = (roomId: string) => {
   const { data, error, isLoading, mutate } = useSWR(`/api/room/${roomId}`, fetcher, {
     revalidateOnFocus: true,
-    refleshInterval: 1000,
+    refreshInterval: 1000,
   });
 
-  const RoomUserWithUserSchema = RoomUserSchema.extend({
-    user: UserSchema,
-  });
-
-  const RoomWithRoomUserSchema = RoomSchema.extend({
-    RoomUser: z.array(RoomUserWithUserSchema),
-  });
-
-  let parsedData: undefined | z.infer<typeof RoomWithRoomUserSchema>;
+  let parsedData: undefined | z.infer<typeof RoomWithRoomUserAndUserAndQuestionSchema>;
   let parseError: Error | undefined;
 
   if (data) {
     try {
       const dataToValidate = data.data !== undefined ? data.data : data;
-      parsedData = RoomWithRoomUserSchema.parse(dataToValidate);
+      parsedData = RoomWithRoomUserAndUserAndQuestionSchema.parse(dataToValidate);
     } catch (e) {
       if (e instanceof ZodError) {
         console.error('Zod parsing error:', e.errors);

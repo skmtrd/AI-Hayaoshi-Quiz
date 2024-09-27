@@ -2,36 +2,63 @@ import InteractiveBuzzerButton from '@/components/element/InteractiveBuzzerButto
 import {
   AlertDialog,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useCallback, useState } from 'react';
+import { isFutureTime } from '@/lib/isFutureTime';
+import { QuestionSchema, RoomWithRoomUserAndUserAndQuestionSchema } from '@/lib/schemas';
+import { User as AuthUser } from 'next-auth';
+import { useCallback, useEffect, useState } from 'react';
+import { z } from 'zod';
 
-const MatchingScreen = () => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+type MatchingScreenProps = {
+  currentUser: AuthUser;
+  roomInfo: z.infer<typeof RoomWithRoomUserAndUserAndQuestionSchema>;
+};
+
+const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }) => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [isOpen, setIsOpen] = useState(false);
-  const [questions, setQuestions] = useState([
-    {
-      question: '坂村健が提唱した「デジタルアーカイブ」の基本的な理念は何ですか？',
-      choices: ['デジタル化', '保存', '公開', '共有'],
-      correctAnswer: 0,
-    },
-    // 他の質問をここに追加
-  ]);
   const [isSolver, setIsSolver] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState<null | z.infer<typeof QuestionSchema>>(
+    null,
+  );
+
+  const [choices, setChoices] = useState<string[]>([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!roomInfo.questionOpenTimeStamp) return;
+      else if (isFutureTime(roomInfo.questionOpenTimeStamp) && currentQuestion === null) {
+        if (roomInfo.currentQuestionIndex === null) return;
+        setCurrentQuestion(roomInfo.questions[roomInfo.currentQuestionIndex]);
+        setChoices(
+          [
+            ...roomInfo.questions[roomInfo.currentQuestionIndex].incorrectAnswers,
+            roomInfo.questions[roomInfo.currentQuestionIndex].answer,
+          ].sort(),
+        );
+      }
+    }, 100);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAnswer = (index: number) => {
     setIsOpen(false);
   };
 
   const handlePress = () => {
-    setIsSolver(!isSolver);
+    console.log('pressed');
+    console.log('currentQuestion', currentQuestion);
+    console.log('choices', choices.length);
   };
 
   const handleOpenChange = useCallback((open: boolean) => {
@@ -40,8 +67,6 @@ const MatchingScreen = () => {
     }
     setIsOpen(open);
   }, []);
-
-  const questionIndex = 0;
 
   return (
     <Card className='mx-auto w-full max-w-sm shadow-md'>
@@ -53,7 +78,7 @@ const MatchingScreen = () => {
       <CardContent className='space-y-4 p-4 sm:space-y-6 sm:p-6'>
         <div className='flex items-center justify-between'>
           <Badge variant='outline' className='px-2 py-1 text-sm sm:text-base'>
-            問題 {questionIndex + 1}/{questions.length}
+            問題 {1}/3
           </Badge>
           <Badge variant='outline' className='px-2 py-1 text-sm sm:text-base'>
             スコア: {score}
@@ -61,26 +86,33 @@ const MatchingScreen = () => {
         </div>
         <Progress value={(timeLeft / 15) * 100} className='h-2 w-full sm:h-3' />
         <div className='space-y-4 sm:space-y-6'>
-          <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>
-            {questions[questionIndex].question}
-          </p>
+          {currentQuestion && (
+            <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>
+              {currentQuestion.question}
+            </p>
+          )}
           <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
             <AlertDialogTrigger asChild>
               <InteractiveBuzzerButton onClick={handlePress} />
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
+                <AlertDialogTitle>{currentQuestion?.question}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  以下から正しい答えを選んでください。
+                </AlertDialogDescription>
                 <div className='grid grid-cols-1 gap-3 sm:gap-4'>
-                  {questions[questionIndex].choices.map((choice, index) => (
-                    <Button
-                      key={index}
-                      onClick={() => handleAnswer(index)}
-                      className='h-auto py-3 text-sm font-bold sm:py-4 sm:text-base'
-                      variant='outline'
-                    >
-                      {choice}
-                    </Button>
-                  ))}
+                  {currentQuestion &&
+                    choices.map((choice, index) => (
+                      <Button
+                        key={index}
+                        onClick={() => handleAnswer(index)}
+                        className='h-auto py-3 text-sm font-bold sm:py-4 sm:text-base'
+                        variant='outline'
+                      >
+                        {choice}
+                      </Button>
+                    ))}
                 </div>
               </AlertDialogHeader>
             </AlertDialogContent>

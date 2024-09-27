@@ -3,7 +3,6 @@ import { getUserId } from '@/lib/getUserId';
 import { handleAPIError } from '@/lib/handleAPIError';
 import { prisma } from '@/lib/prisma';
 import { apiRes } from '@/lib/types';
-import { RoomStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 //roomテーブルからmaxPlayerカラムを取得
@@ -72,7 +71,6 @@ export const PUT = async (req: Request, res: NextResponse) =>
       updateRoomInfo = await prisma.room.update({
         where: { id: roomId },
         data: {
-          status: RoomStatus.PLAYING,
           numberOfUser: maxPlayer,
         },
       });
