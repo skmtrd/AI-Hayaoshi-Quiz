@@ -50,7 +50,6 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ currentUser, roomI
       method: 'PUT',
     });
   };
-
   const [dots, setDots] = useState(1);
   useEffect(() => {
     const interval = setInterval(() => {
