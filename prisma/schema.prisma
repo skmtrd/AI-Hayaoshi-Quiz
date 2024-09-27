@@ -109,12 +109,14 @@ model Room {
   status    RoomStatus @default(WAITING)
   types     String
   maxPlayer Int?
+  buttonTimeStamp DateTime?
   currentSolverId String?
-  inviteId  String    @unique 
+  inviteId  String    @unique
   difficulty Float?
   answerTimeLimit Int? // ボタンを押してからの制限時間
   thinkingTimeLimit Int? // 問題が表示されてからの制限時間
   questions Question[]
+  questionOpenTimeStamp DateTime?
   currentQuestionId String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
