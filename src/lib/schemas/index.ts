@@ -72,3 +72,17 @@ export const RoomUserSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
 });
+
+export const UserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+  image: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  rating: z.number().nullable(),
+});
+
+export const UserWithResultsSchema = UserSchema.extend({
+  results: z.array(ResultSchema),
+});
