@@ -1,5 +1,5 @@
 import { auth } from '@/auth';
-import { WaitingScreen } from '@/components/element/waitingScreen';
+import { WaitingScreen } from '@/components/element/WaitingScreen';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 
