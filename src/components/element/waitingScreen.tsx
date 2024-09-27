@@ -12,18 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Room, RoomUser, User } from '@prisma/client';
+import useRoomData from '@/hooks/SWR/useRoomData';
 import { Flag, PlayIcon, Settings } from 'lucide-react';
 import { User as AuthUser } from 'next-auth';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 type WaitingScreenProps = {
-  room: Room & {
-    RoomUser: (RoomUser & {
-      user: User;
-    })[];
-  };
   currentUser: AuthUser;
 };
 
@@ -34,23 +29,25 @@ const leaveRoom = async (roomId: string) => {
   return res.json();
 };
 
-export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser }) => {
+export const WaitingScreen: React.FC<WaitingScreenProps> = ({ currentUser }) => {
   const router = useRouter();
-  const isHost = room.RoomUser.find(
-    (roomUser) => roomUser.user.id === currentUser.id && roomUser.isHost,
-  );
-
+  const roomId = usePathname().split('room/')[1];
+  const { roomInfo, isError, isLoading, mutate } = useRoomData(roomId);
   const [dots, setDots] = useState(1);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setDots((prevDots) => (prevDots % 3) + 1);
     }, 500);
     return () => clearInterval(interval);
   }, []);
+  if (!roomInfo || isError || isLoading) {
+    return <div>loading...</div>;
+  }
+
+  const isHost = roomInfo.RoomUser.find((roomUser) => roomUser.userId === currentUser.id)?.isHost;
 
   const handleLeaveRoom = async () => {
-    const res = await leaveRoom(room.id);
+    const res = await leaveRoom(roomInfo.id);
     if (res.message === 'success leave') {
       router.push('/rooms');
     } else if (res.message === 'room is deleted') {
@@ -67,27 +64,28 @@ export const WaitingScreen: React.FC<WaitingScreenProps> = ({ room, currentUser 
       <CardHeader className='border-b border-border p-3'>
         <div className='flex w-full items-center justify-between'>
           <LeaveRoomButton
-            roomId={room.id}
+            roomId={roomInfo.id}
             isHost={
-              room.RoomUser.find((roomUser) => roomUser.userId === currentUser.id)?.isHost ?? false
+              roomInfo.RoomUser.find((roomUser) => roomUser.userId === currentUser.id)?.isHost ??
+              false
             }
           />
-          <CardTitle>{room.theme}</CardTitle>
+          <CardTitle>{roomInfo.theme}</CardTitle>
           <div className='size-10' />
         </div>
       </CardHeader>
       <CardContent className='flex flex-col gap-y-5'>
         <div className='h-2' />
         <p className='text-lg font-medium'>
-          参加者: {room.RoomUser.length} / {room.maxPlayer}
+          参加者: {roomInfo.RoomUser.length} / {roomInfo.maxPlayer}
         </p>
         <ul
           className='flex max-h-[30vh] flex-col gap-2 overflow-y-auto'
           style={{ scrollbarWidth: 'thin' }}
         >
-          {room.RoomUser.map((roomUser) => (
+          {roomInfo.RoomUser.map((roomUser) => (
             <li
-              key={roomUser.user.id}
+              key={roomUser.id}
               className='flex items-center justify-between gap-2 rounded-md bg-secondary px-4 py-2'
             >
               <div className='flex items-center gap-2'>
