@@ -27,25 +27,29 @@ export default async function Home() {
   const session = await auth();
 
   return (
-    <div className='mx-auto flex max-w-6xl flex-col items-center justify-center gap-y-10 px-4 py-16'>
-      <h1 className='text-4xl font-bold text-primary'>AI早押しバトルへようこそ！</h1>
+    <div className='mx-auto flex max-w-6xl flex-col items-center justify-center gap-y-8 px-4 py-8 sm:py-16'>
+      <h1 className='text-center text-2xl font-bold text-primary sm:text-3xl md:text-4xl'>
+        AI早押しバトルへようこそ！
+      </h1>
 
       <div className='flex w-full flex-col md:flex-row md:items-center md:justify-between'>
-        <div className='mb-8 md:mb-0 md:w-1/2'>
-          <h2 className='mb-4 text-2xl font-semibold'>知識と反射神経を競う新感覚クイズゲーム</h2>
-          <p className='mb-6 text-lg text-muted-foreground'>
+        <div className='mb-8 md:mb-0 md:w-1/2 md:pr-8'>
+          <h2 className='mb-4 text-xl font-semibold sm:text-2xl'>
+            知識と反射神経を競う新感覚クイズゲーム
+          </h2>
+          <p className='mb-6 text-base text-muted-foreground sm:text-lg'>
             AIが生成する多彩な問題に挑戦し、友達や世界中のプレイヤーと競い合おう。
             楽しみながら知識が身につく、新しい学習体験が待っています！
           </p>
           {!session?.user ? (
-            <Link href='/api/auth/signin'>
-              <Button size='lg'>
+            <Link href='/api/auth/signin' className='block w-full sm:w-auto'>
+              <Button size='lg' className='w-full sm:w-auto'>
                 今すぐ始める <ArrowRight className='ml-2 size-4' />
               </Button>
             </Link>
           ) : (
-            <Link href='/room'>
-              <Button size='lg'>
+            <Link href='/room' className='block w-full sm:w-auto'>
+              <Button size='lg' className='w-full sm:w-auto'>
                 ルームに参加する <ArrowRight className='ml-2 size-4' />
               </Button>
             </Link>
@@ -57,22 +61,24 @@ export default async function Home() {
             alt='AI早押しバトルのイメージ'
             width={500}
             height={300}
-            className='rounded-lg shadow-lg'
+            className='h-auto w-full rounded-lg shadow-lg'
           />
         </div>
       </div>
 
-      <div className='grid w-full gap-6 md:grid-cols-3'>
+      <div className='grid w-full gap-6 sm:grid-cols-2 lg:grid-cols-3'>
         {features.map((feature, index) => (
           <Card key={index}>
             <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
+              <CardTitle className='flex items-center gap-2 text-lg sm:text-xl'>
                 {feature.icon}
                 {feature.title}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription>{feature.description}</CardDescription>
+              <CardDescription className='text-sm sm:text-base'>
+                {feature.description}
+              </CardDescription>
             </CardContent>
           </Card>
         ))}
