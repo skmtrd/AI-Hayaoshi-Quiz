@@ -14,7 +14,7 @@ export const RoomSchema = z.object({
   answerTimeLimit: z.number().nullable(),
   thinkingTimeLimit: z.number().nullable(),
   currentQuestionIndex: z.number().nullable(),
-  buttonTimeStamp: z.number().nullable(),
+  buttonTimeStamp: z.string().nullable(),
   questionOpenTimeStamp: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),

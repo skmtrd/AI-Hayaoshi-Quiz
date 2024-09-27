@@ -15,11 +15,23 @@ import { isFutureTime } from '@/lib/isFutureTime';
 import { QuestionSchema, RoomWithRoomUserAndUserAndQuestionSchema } from '@/lib/schemas';
 import { User as AuthUser } from 'next-auth';
 import { useCallback, useEffect, useState } from 'react';
+import { mutate } from 'swr';
 import { z } from 'zod';
 
 type MatchingScreenProps = {
   currentUser: AuthUser;
   roomInfo: z.infer<typeof RoomWithRoomUserAndUserAndQuestionSchema>;
+};
+
+const tryAnswer = async (now: string, roomId: string) => {
+  const res = await fetch(`/api/room/${roomId}/button`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ buttonTimeStamp: now }),
+  });
+  return res.json();
 };
 
 const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }) => {
@@ -55,10 +67,18 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     setIsOpen(false);
   };
 
-  const handlePress = () => {
-    console.log('pressed');
-    console.log('currentQuestion', currentQuestion);
-    console.log('choices', choices.length);
+  const handlePress = async () => {
+    mutate(`/api/room/${roomInfo.id}`);
+    const now = new Date().toISOString();
+    const res = await tryAnswer(now, roomInfo.id);
+    if (res.message === 'buttonTimeStamp is saved to db') {
+      setIsSolver(true);
+    } else if (res.message === 'buttonTimeStamp is updated') {
+      setIsSolver(true);
+    } else if (res.message === 'no update buttonTimeStamp(success)') {
+      setIsSolver(false);
+    }
+    mutate(`/api/room/${roomInfo.id}`);
   };
 
   const handleOpenChange = useCallback((open: boolean) => {
@@ -67,6 +87,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     }
     setIsOpen(open);
   }, []);
+  if (roomInfo.currentSolverId && !isOpen) {
+    setIsOpen(true);
+  }
 
   return (
     <Card className='mx-auto w-full max-w-sm shadow-md'>
@@ -99,21 +122,27 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
               <AlertDialogHeader>
                 <AlertDialogTitle>{currentQuestion?.question}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  以下から正しい答えを選んでください。
+                  {isSolver
+                    ? '以下から正しい答えを選んでください。'
+                    : roomInfo.currentSolverId === null
+                      ? '回答権の確認中です。'
+                      : '他のプレイヤーが回答中です。'}
                 </AlertDialogDescription>
-                <div className='grid grid-cols-1 gap-3 sm:gap-4'>
-                  {currentQuestion &&
-                    choices.map((choice, index) => (
-                      <Button
-                        key={index}
-                        onClick={() => handleAnswer(index)}
-                        className='h-auto py-3 text-sm font-bold sm:py-4 sm:text-base'
-                        variant='outline'
-                      >
-                        {choice}
-                      </Button>
-                    ))}
-                </div>
+                {isSolver && (
+                  <div className='grid grid-cols-1 gap-3 sm:gap-4'>
+                    {currentQuestion &&
+                      choices.map((choice, index) => (
+                        <Button
+                          key={index}
+                          onClick={() => handleAnswer(index)}
+                          className='h-auto py-3 text-sm font-bold sm:py-4 sm:text-base'
+                          variant='outline'
+                        >
+                          {choice}
+                        </Button>
+                      ))}
+                  </div>
+                )}
               </AlertDialogHeader>
             </AlertDialogContent>
           </AlertDialog>
