@@ -63,6 +63,10 @@ export const ResultSchema = z.object({
   updatedAt: z.string(),
 });
 
+export const ResultWithRoomSchema = ResultSchema.extend({
+  room: RoomSchema,
+});
+
 // 新しく追加されたRoomUserスキーマ
 export const RoomUserSchema = z.object({
   id: z.string(),
@@ -83,6 +87,6 @@ export const UserSchema = z.object({
   rating: z.number().nullable(),
 });
 
-export const UserWithResultsSchema = UserSchema.extend({
-  results: z.array(ResultSchema),
+export const UserProfileSchema = UserSchema.extend({
+  results: z.array(ResultWithRoomSchema),
 });
