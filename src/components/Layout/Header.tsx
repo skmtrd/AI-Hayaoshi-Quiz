@@ -1,4 +1,4 @@
-import { auth } from '@/auth';
+import { auth, signIn, signOut } from '@/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User } from 'lucide-react';
+import { LogIn, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
 
 export const Header = async () => {
@@ -32,15 +32,42 @@ export const Header = async () => {
           <DropdownMenuContent className='w-56'>
             <DropdownMenuLabel>アカウント</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {session?.user?.id && (
+              <DropdownMenuItem asChild>
+                <Link href={`/user/${session.user.id}`} className='flex'>
+                  <User className='mr-2 size-4' />
+                  プロフィール
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem asChild>
-              <Link href={`/user/${session?.user?.id ?? ''}`} className='flex'>
-                <User className='mr-2 size-4' />
-                プロフィール
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <LogOut className='mr-2 size-4' />
-              <span>ログアウト</span>
+              {session ? (
+                <form
+                  action={async () => {
+                    'use server';
+                    await signOut();
+                  }}
+                  className='flex'
+                >
+                  <button type='submit' className='flex w-full items-center'>
+                    <LogOut className='mr-2 size-4' />
+                    <span>ログアウト</span>
+                  </button>
+                </form>
+              ) : (
+                <form
+                  action={async () => {
+                    'use server';
+                    await signIn('google');
+                  }}
+                  className='flex'
+                >
+                  <button type='submit' className='flex w-full items-center'>
+                    <LogIn className='mr-2 size-4' />
+                    <span>ログイン</span>
+                  </button>
+                </form>
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
