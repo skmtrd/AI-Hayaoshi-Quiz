@@ -32,9 +32,11 @@ export const Header = async () => {
           <DropdownMenuContent className='w-56'>
             <DropdownMenuLabel>アカウント</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className='mr-2 size-4' />
-              <span>プロフィール</span>
+            <DropdownMenuItem asChild>
+              <Link href={`/user/${session?.user?.id ?? ''}`} className='flex'>
+                <User className='mr-2 size-4' />
+                プロフィール
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <LogOut className='mr-2 size-4' />
