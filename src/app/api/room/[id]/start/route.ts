@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server';
 export const PUT = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
     dbConnect();
-    const { roomId } = await req.json();
+    const roomId: string = req.url.split('/')[5];
     if (!roomId) {
       return NextResponse.json<apiRes>({ message: 'room not exits' }, { status: 400 });
     }
