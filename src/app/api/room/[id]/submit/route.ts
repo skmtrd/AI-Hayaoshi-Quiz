@@ -1,7 +1,9 @@
+import { calculateResults } from '@/lib/calculateResults';
 import { getUserId } from '@/lib/getUserId';
 import { handleAPIError } from '@/lib/handleAPIError';
 import { prisma } from '@/lib/prisma';
 import { apiRes } from '@/lib/types';
+import console from 'console';
 import { NextResponse } from 'next/server';
 
 export const PUT = async (req: Request, res: NextResponse) =>
@@ -13,7 +15,16 @@ export const PUT = async (req: Request, res: NextResponse) =>
       return NextResponse.json<apiRes>({ message: 'room not exits' }, { status: 400 });
     }
     const { isCorrect, questionId } = await req.json();
-    const roomInfos = await prisma.room.findUnique({ where: { id: roomId } });
+
+    const roomInfos = await prisma.room.findUnique({
+      where: { id: roomId },
+      include: { questions: true, Result: true },
+    });
+
+    if (roomInfos?.status === 'FINISHED') {
+      return NextResponse.json<apiRes>({ message: 'room is finished' }, { status: 400 });
+    }
+
     const solver = await prisma.solver.create({
       data: {
         isCorrect,
@@ -39,7 +50,24 @@ export const PUT = async (req: Request, res: NextResponse) =>
           currentQuestionIndex: roomInfos?.currentQuestionIndex + 1,
         },
       });
-      console.log(newRoomInfos);
+
+      // results計算と保存を修正
+      const results = await calculateResults(roomId, newRoomInfos.types === 'RATED');
+      console.log(results);
+
+      if (newRoomInfos.currentQuestionIndex === roomInfos?.questions.length) {
+        const updatedRoomInfos = await prisma.room.update({
+          where: { id: roomId },
+          data: {
+            status: 'FINISHED',
+            Result: {
+              createMany: {
+                data: results,
+              },
+            },
+          },
+        });
+      }
     } else {
       const newRoomInfos = await prisma.room.update({
         where: { id: roomId },
