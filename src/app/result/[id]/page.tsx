@@ -15,7 +15,11 @@ async function getResult(id: string) {
       id,
     },
     include: {
-      Result: true,
+      Result: {
+        include: {
+          user: true,
+        },
+      },
     },
   });
   return data;
@@ -39,13 +43,15 @@ export default async function ResultPage({ params }: { params: { id: string } })
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            {room.Result.map((result: any) => (
+            {room.Result.map((result) => (
               <Link href={`/user/${result.user.id}`} key={result.id} className='block'>
                 <div className='flex items-center justify-between border-b pb-4'>
                   <div className='flex items-center'>
                     <Avatar className='mr-3'>
-                      <AvatarImage src={result.user.image} alt={result.user.name} />
-                      <AvatarFallback>{result.user.name[0]}</AvatarFallback>
+                      <AvatarImage src={result.user.image ?? ''} alt={result.user.name ?? ''} />
+                      <AvatarFallback>
+                        {result.user.name?.slice(0, 2).toUpperCase() ?? 'U'}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <h3 className='flex items-center text-lg font-semibold'>
@@ -59,19 +65,21 @@ export default async function ResultPage({ params }: { params: { id: string } })
                   </div>
                   <Badge
                     className={cn(
-                      result.ratingDelta > 0
-                        ? 'bg-green-500 hover:bg-green-600'
-                        : result.ratingDelta < 0
-                          ? 'bg-red-500 hover:bg-red-600'
-                          : 'bg-gray-500 hover:bg-gray-600',
+                      result.ratingDelta &&
+                        (result.ratingDelta > 0
+                          ? 'bg-green-500 hover:bg-green-600'
+                          : result.ratingDelta < 0
+                            ? 'bg-red-500 hover:bg-red-600'
+                            : 'bg-gray-500 hover:bg-gray-600'),
                       'text-white',
                     )}
                   >
-                    {result.ratingDelta >= 0
-                      ? result.ratingDelta === 0
-                        ? '±0'
-                        : `+${result.ratingDelta}`
-                      : result.ratingDelta}
+                    {result.ratingDelta &&
+                      (result.ratingDelta > 0
+                        ? `+${result.ratingDelta}`
+                        : result.ratingDelta < 0
+                          ? result.ratingDelta
+                          : '±0')}
                   </Badge>
                 </div>
               </Link>
