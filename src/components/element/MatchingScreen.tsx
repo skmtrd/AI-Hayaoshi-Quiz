@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { isFutureTime } from '@/lib/isFutureTime';
 import { RoomWithRoomUserAndUserAndQuestionSchema } from '@/lib/schemas';
 import { Circle, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 type MatchingScreenProps = {
   currentUser: AuthUser;
@@ -56,6 +57,7 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (isTimerActive) {
@@ -131,7 +133,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
   };
 
   const handlePress = async () => {
-    if (alreadyAnswered || !isQuizOpen) return;
+    console.log(timeLeft);
+    if (alreadyAnswered || !isQuizOpen || timeLeft === 0) return;
+    console.log('handlePress');
     const now = new Date().toISOString();
     await tryAnswer(now, roomInfo.id);
     mutate(`/api/room/${roomInfo.id}`);
@@ -139,12 +143,12 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
-      if (alreadyAnswered || !isQuizOpen) return;
+      if (alreadyAnswered || !isQuizOpen || timeLeft === 0) return;
       if (open) {
         setIsOpen(open);
       }
     },
-    [alreadyAnswered, isQuizOpen],
+    [alreadyAnswered, isQuizOpen, timeLeft],
   );
 
   useEffect(() => {
@@ -177,11 +181,16 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     return <div>loading...</div>;
   }
 
+  if (roomInfo.status === 'FINISHED') {
+    setTimeout(() => {
+      router.push(`/result/${roomInfo.id}`);
+    }, 10000);
+  }
+
   const currentQuestion = roomInfo.questions[roomInfo.currentQuestionIndex];
 
   return (
     <Card className='mx-auto w-full max-w-sm shadow-md'>
-      <p>{timeLeft}</p>
       {isOpenIncorrectDialog && (
         <AlertDialog open={isOpenIncorrectDialog}>
           <AlertDialogContent>
@@ -262,6 +271,11 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
           {isQuizOpen && currentQuestion && (
             <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>
               {currentQuestion.question}
+            </p>
+          )}
+          {!currentQuestion && (
+            <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>
+              集計中です...
             </p>
           )}
           <QuizDialog
