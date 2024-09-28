@@ -119,7 +119,6 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
   }, [roomInfo.currentSolverId]);
 
   useEffect(() => {
-    //前回の問題の正解者が他のユーザーだっった場合、という条件を追加
     if (roomInfo.currentQuestionIndex === null || roomInfo.currentQuestionIndex === 0) return;
     if (
       roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
@@ -159,7 +158,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
         <AlertDialog open={isOpenCorrectDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{currentQuestion?.question}</AlertDialogTitle>
+              <AlertDialogTitle>
+                {roomInfo.questions[roomInfo.currentQuestionIndex - 1].question}
+              </AlertDialogTitle>
               <AlertDialogDescription>回答</AlertDialogDescription>
               <div className='flex items-center justify-center'>
                 <Circle size={100} color={'red'} strokeWidth={4} />
@@ -172,7 +173,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
         <AlertDialog open={isOpenOtherUserCorrectDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{currentQuestion?.question}</AlertDialogTitle>
+              <AlertDialogTitle>
+                {roomInfo.questions[roomInfo.currentQuestionIndex - 1].question}
+              </AlertDialogTitle>
               <AlertDialogDescription>回答</AlertDialogDescription>
               <Avatar className='relative z-10 box-content size-20 border border-primary'>
                 <AvatarImage
