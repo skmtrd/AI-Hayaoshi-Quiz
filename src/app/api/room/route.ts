@@ -72,6 +72,9 @@ export const POST = async (req: Request, res: NextResponse) =>
 export const GET = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
     const rooms = await prisma.room.findMany({
+      where: {
+        status: RoomStatus.WAITING,
+      },
       orderBy: { createdAt: 'desc' },
     });
 
