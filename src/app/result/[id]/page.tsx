@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 async function getResult(id: string) {
-  const res = await fetch(`http://localhost:3000/api/result/${id}`, {
+  const res = await fetch(`/api/result/${id}`, {
     cache: 'no-store',
   });
   if (!res.ok) {

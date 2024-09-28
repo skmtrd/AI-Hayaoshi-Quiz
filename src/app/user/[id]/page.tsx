@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
 const getUser = async (id: string) => {
-  const res = await fetch(`http://localhost:3000/api/user/${id}`);
+  const res = await fetch(`/api/user/${id}`);
   const data = await res.json();
   const parsedData = UserProfileSchema.parse(data?.data);
   return parsedData;
