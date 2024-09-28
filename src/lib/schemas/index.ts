@@ -98,6 +98,10 @@ export const RoomUserWithUserSchema = RoomUserSchema.extend({
   user: UserSchema,
 });
 
+export const QuestionWithSolverSchema = QuestionSchema.extend({
+  solvers: z.array(SolverSchema),
+});
+
 export const RoomWithRoomUserAndUserAndQuestionSchema = RoomSchema.extend({
   RoomUser: z.array(RoomUserWithUserSchema),
   questions: z.array(QuestionSchema.extend({ solvers: z.array(SolverSchema) })),

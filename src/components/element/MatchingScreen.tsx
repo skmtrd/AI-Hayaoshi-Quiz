@@ -112,7 +112,12 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-4 p-4 sm:space-y-6 sm:p-6'>
-        <QuizInfo score={score} timeLeft={timeLeft} users={roomInfo.RoomUser} />
+        <QuizInfo
+          score={score}
+          timeLeft={timeLeft}
+          users={roomInfo.RoomUser}
+          questionInfos={roomInfo.questions}
+        />
         <div className='space-y-4 sm:space-y-6'>
           {isQuizOpen && currentQuestion && (
             <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>
