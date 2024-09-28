@@ -117,6 +117,7 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
           timeLeft={timeLeft}
           users={roomInfo.RoomUser}
           questionInfos={roomInfo.questions}
+          currentQuestionIndex={roomInfo.currentQuestionIndex}
         />
         <div className='space-y-4 sm:space-y-6'>
           {isQuizOpen && currentQuestion && (
