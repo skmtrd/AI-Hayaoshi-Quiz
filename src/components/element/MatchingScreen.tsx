@@ -47,13 +47,35 @@ const submitAnswer = async (isCorrect: boolean, questionId: string, roomId: stri
 
 const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }) => {
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
   const [isOpen, setIsOpen] = useState(false);
   const [alreadyAnswered, setAlreadyAnswered] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isOpenIncorrectDialog, setIsOpenIncorrectDialog] = useState(false);
   const [isOpenCorrectDialog, setIsOpenCorrectDialog] = useState(false);
   const [isOpenOtherUserCorrectDialog, setIsOpenOtherUserCorrectDialog] = useState(false);
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (isTimerActive) {
+      const newTimer = setInterval(() => {
+        setTimeLeft((prevTime) => {
+          if (prevTime === 0) {
+            setIsTimerActive(false);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+      return () => {
+        clearInterval(newTimer);
+      };
+    } else if (timer) {
+      clearInterval(timer);
+      setTimer(null);
+    }
+  }, [isTimerActive, timer]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -64,6 +86,15 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
           (solver) => solver.userId === currentUser.id,
         ),
       );
+      if (
+        isFutureTime(roomInfo.questionOpenTimeStamp) &&
+        !isTimerActive &&
+        !roomInfo.currentSolverId
+      ) {
+        console.log('setIsTimerActive(true)');
+        console.log(isTimerActive);
+        setIsTimerActive(true);
+      }
     }, 100);
     return () => clearInterval(interval);
   }, [
@@ -72,6 +103,8 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     currentUser.id,
     roomInfo.questions,
     isQuizOpen,
+    isTimerActive,
+    roomInfo.currentSolverId,
   ]);
 
   const handleAnswer = async (choice: string) => {
@@ -116,9 +149,16 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
 
   useEffect(() => {
     setIsOpen(!!roomInfo.currentSolverId);
+    if (!roomInfo.currentSolverId) {
+      setIsTimerActive(true);
+    } else {
+      setIsTimerActive(false);
+    }
   }, [roomInfo.currentSolverId]);
 
   useEffect(() => {
+    setTimeLeft(15);
+    setIsTimerActive(false);
     if (roomInfo.currentQuestionIndex === null || roomInfo.currentQuestionIndex === 0) return;
     if (
       roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
@@ -141,6 +181,7 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
 
   return (
     <Card className='mx-auto w-full max-w-sm shadow-md'>
+      <p>{timeLeft}</p>
       {isOpenIncorrectDialog && (
         <AlertDialog open={isOpenIncorrectDialog}>
           <AlertDialogContent>
@@ -159,7 +200,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                {roomInfo.questions[roomInfo.currentQuestionIndex - 1].question}
+                {roomInfo.currentQuestionIndex === 0
+                  ? ''
+                  : roomInfo.questions[roomInfo.currentQuestionIndex - 1].question}
               </AlertDialogTitle>
               <AlertDialogDescription>回答</AlertDialogDescription>
               <div className='flex items-center justify-center'>
