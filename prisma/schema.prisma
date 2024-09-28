@@ -169,9 +169,10 @@ model Solver {
 model Result {
   id          String   @id @default(cuid())
   room        Room     @relation(fields: [roomId], references: [id])
-  roomId      String   @unique
+  roomId      String
   user        User     @relation(fields: [userId], references: [id])
   userId      String
+  correctCount Int
   ratingDelta Float?   @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

@@ -61,6 +61,7 @@ export const ResultSchema = z.object({
   id: z.string(),
   roomId: z.string(),
   userId: z.string(),
+  correctCount: z.number().nullable(),
   ratingDelta: z.number().nullable().default(0),
   createdAt: z.string(),
   updatedAt: z.string(),
