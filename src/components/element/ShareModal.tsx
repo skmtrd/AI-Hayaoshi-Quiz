@@ -13,13 +13,16 @@ import { ShareIcon } from 'lucide-react';
 import process from 'process';
 import { useState } from 'react';
 
-interface ShareModalProps {
-  roomId: string;
-}
+type ShareModalProps = {
+  path: string;
+  text: string;
+};
 
-export function ShareModal({ roomId }: ShareModalProps) {
+export function ShareModal({ path, text }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
-  const shareUrl = `${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/room/${roomId}`;
+  const shareUrl = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+    ? `${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/${path}`
+    : `http://localhost:3000/${path}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -32,12 +35,12 @@ export function ShareModal({ roomId }: ShareModalProps) {
       <DialogTrigger asChild>
         <Button className='w-full'>
           <ShareIcon className='mr-2' />
-          この試合の結果をシェア
+          {text}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>試合結果をシェア</DialogTitle>
+          <DialogTitle>{text}</DialogTitle>
         </DialogHeader>
         <div className='flex items-center space-x-2'>
           <Input value={shareUrl} readOnly />
