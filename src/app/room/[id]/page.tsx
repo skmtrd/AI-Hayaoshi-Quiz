@@ -21,7 +21,9 @@ export default function RoomPage() {
       {roomInfo.status === 'WAITING' && (
         <WaitingScreen currentUser={data.user} roomInfo={roomInfo} />
       )}
-      {roomInfo.status === 'PLAYING' && <MatchingScreen></MatchingScreen>}
+      {roomInfo.status === 'PLAYING' && (
+        <MatchingScreen currentUser={data.user} roomInfo={roomInfo}></MatchingScreen>
+      )}
     </div>
   );
 }

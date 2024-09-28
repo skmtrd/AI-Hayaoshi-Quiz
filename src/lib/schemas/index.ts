@@ -14,8 +14,8 @@ export const RoomSchema = z.object({
   answerTimeLimit: z.number().nullable(),
   thinkingTimeLimit: z.number().nullable(),
   currentQuestionIndex: z.number().nullable(),
-  buttonTimeStamp: z.number().nullable(),
-  questionOpenTimeStamp: z.number().nullable(),
+  buttonTimeStamp: z.string().nullable(),
+  questionOpenTimeStamp: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -40,6 +40,7 @@ export const QuestionSchema = z.object({
   id: z.string(),
   question: z.string(),
   answer: z.string(),
+  incorrectAnswers: z.array(z.string()),
   comment: z.string(),
   roomId: z.string(),
   createdAt: z.string(),
@@ -91,4 +92,13 @@ export const UserSchema = z.object({
 
 export const UserProfileSchema = UserSchema.extend({
   results: z.array(ResultWithRoomSchema),
+});
+
+export const RoomUserWithUserSchema = RoomUserSchema.extend({
+  user: UserSchema,
+});
+
+export const RoomWithRoomUserAndUserAndQuestionSchema = RoomSchema.extend({
+  RoomUser: z.array(RoomUserWithUserSchema),
+  questions: z.array(QuestionSchema),
 });

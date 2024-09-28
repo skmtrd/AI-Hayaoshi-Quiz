@@ -12,9 +12,14 @@ export const PUT = async (req: Request, res: NextResponse) =>
     if (!roomId) {
       return NextResponse.json<apiRes>({ message: 'room not exits' }, { status: 400 });
     }
+
+    const nowDate = new Date();
+    nowDate.setSeconds(nowDate.getSeconds() + 15);
+    const questionOpenTimeStamp = nowDate.toISOString();
+
     const newRoomInfos = await prisma.room.update({
       where: { id: roomId },
-      data: { status: RoomStatus.PLAYING },
+      data: { status: RoomStatus.PLAYING, questionOpenTimeStamp },
     });
 
     return NextResponse.json<apiRes>(
