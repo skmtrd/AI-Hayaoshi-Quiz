@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { isFutureTime } from '@/lib/isFutureTime';
-import { QuestionSchema, RoomWithRoomUserAndUserAndQuestionSchema } from '@/lib/schemas';
+import { RoomWithRoomUserAndUserAndQuestionSchema } from '@/lib/schemas';
 import { User as AuthUser } from 'next-auth';
 import { useCallback, useEffect, useState } from 'react';
 import { mutate } from 'swr';
@@ -34,50 +34,57 @@ const tryAnswer = async (now: string, roomId: string) => {
   return res.json();
 };
 
+const submitAnswer = async (isCorrect: boolean, questionId: string, roomId: string) => {
+  const res = await fetch(`/api/room/${roomId}/submit`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ isCorrect, questionId }),
+  });
+  return res.json();
+};
+
 const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }) => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [isOpen, setIsOpen] = useState(false);
-  const [isSolver, setIsSolver] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState<null | z.infer<typeof QuestionSchema>>(
-    null,
-  );
-
-  const [choices, setChoices] = useState<string[]>([]);
+  const [alreadyAnswered, setAlreadyAnswered] = useState(false);
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (!roomInfo.questionOpenTimeStamp) return;
-      else if (isFutureTime(roomInfo.questionOpenTimeStamp) && currentQuestion === null) {
-        if (roomInfo.currentQuestionIndex === null) return;
-        setCurrentQuestion(roomInfo.questions[roomInfo.currentQuestionIndex]);
-        setChoices(
-          [
-            ...roomInfo.questions[roomInfo.currentQuestionIndex].incorrectAnswers,
-            roomInfo.questions[roomInfo.currentQuestionIndex].answer,
-          ].sort(),
-        );
+      console.log(isFutureTime(roomInfo.questionOpenTimeStamp));
+      const time = new Date().toISOString();
+      console.log(time, roomInfo.questionOpenTimeStamp);
+      if (isFutureTime(roomInfo.questionOpenTimeStamp)) {
+        setIsQuizOpen(true);
+      } else {
+        setIsQuizOpen(false);
       }
     }, 100);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [roomInfo.questionOpenTimeStamp]);
 
-  const handleAnswer = (index: number) => {
-    setIsOpen(false);
+  const handleAnswer = (choice: string) => {
+    if (roomInfo.currentQuestionIndex === null) return;
+    setAlreadyAnswered(true);
+    submitAnswer(
+      choice === roomInfo.questions[roomInfo.currentQuestionIndex]?.answer,
+      roomInfo.questions[roomInfo.currentQuestionIndex].id,
+      roomInfo.id,
+    );
+    if (choice === roomInfo.questions[roomInfo.currentQuestionIndex]?.answer) {
+      setScore(score + 1);
+    }
   };
 
   const handlePress = async () => {
     mutate(`/api/room/${roomInfo.id}`);
     const now = new Date().toISOString();
     const res = await tryAnswer(now, roomInfo.id);
-    if (res.message === 'buttonTimeStamp is saved to db') {
-      setIsSolver(true);
-    } else if (res.message === 'buttonTimeStamp is updated') {
-      setIsSolver(true);
-    } else if (res.message === 'no update buttonTimeStamp(success)') {
-      setIsSolver(false);
-    }
     mutate(`/api/room/${roomInfo.id}`);
   };
 
@@ -87,8 +94,21 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     }
     setIsOpen(open);
   }, []);
+
   if (roomInfo.currentSolverId && !isOpen) {
     setIsOpen(true);
+  }
+
+  if (!roomInfo.currentSolverId && isOpen) {
+    setIsOpen(false);
+  }
+
+  if (!roomInfo.questionOpenTimeStamp) {
+    return <div>loading...</div>;
+  }
+
+  if (roomInfo.currentQuestionIndex === null) {
+    return <div>loading...</div>;
   }
 
   return (
@@ -109,9 +129,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
         </div>
         <Progress value={(timeLeft / 15) * 100} className='h-2 w-full sm:h-3' />
         <div className='space-y-4 sm:space-y-6'>
-          {currentQuestion && (
+          {isQuizOpen && (
             <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>
-              {currentQuestion.question}
+              {roomInfo.questions[roomInfo.currentQuestionIndex]?.question}
             </p>
           )}
           <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -120,21 +140,27 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>{currentQuestion?.question}</AlertDialogTitle>
+                <AlertDialogTitle>
+                  {roomInfo.questions[roomInfo.currentQuestionIndex]?.question}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  {isSolver
+                  {roomInfo.currentSolverId === currentUser.id
                     ? '以下から正しい答えを選んでください。'
                     : roomInfo.currentSolverId === null
                       ? '回答権の確認中です。'
                       : '他のプレイヤーが回答中です。'}
                 </AlertDialogDescription>
-                {isSolver && (
+                {roomInfo.currentSolverId === currentUser.id && (
                   <div className='grid grid-cols-1 gap-3 sm:gap-4'>
-                    {currentQuestion &&
-                      choices.map((choice, index) => (
+                    {[
+                      ...roomInfo.questions[roomInfo.currentQuestionIndex].incorrectAnswers,
+                      roomInfo.questions[roomInfo.currentQuestionIndex].answer,
+                    ]
+                      .sort()
+                      .map((choice) => (
                         <Button
-                          key={index}
-                          onClick={() => handleAnswer(index)}
+                          key={choice}
+                          onClick={() => handleAnswer(choice)}
                           className='h-auto py-3 text-sm font-bold sm:py-4 sm:text-base'
                           variant='outline'
                         >
