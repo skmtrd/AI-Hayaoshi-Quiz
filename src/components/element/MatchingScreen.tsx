@@ -47,8 +47,6 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     const interval = setInterval(() => {
       if (!roomInfo.questionOpenTimeStamp || roomInfo.currentQuestionIndex === null) return;
       setIsQuizOpen(isFutureTime(roomInfo.questionOpenTimeStamp));
-      console.log(isFutureTime(roomInfo.questionOpenTimeStamp));
-      console.log('isQuizOpen', isQuizOpen);
       setAlreadyAnswered(
         roomInfo.questions[roomInfo.currentQuestionIndex]?.solvers.some(
           (solver) => solver.userId === currentUser.id,
@@ -110,11 +108,11 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     <Card className='mx-auto w-full max-w-sm shadow-md'>
       <CardHeader className='bg-gray-100 py-4 sm:py-6'>
         <CardTitle className='text-center text-xl font-bold text-gray-800 sm:text-2xl'>
-          オンラインクイズ
+          {roomInfo.theme}
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-4 p-4 sm:space-y-6 sm:p-6'>
-        <QuizInfo score={score} timeLeft={timeLeft} />
+        <QuizInfo score={score} timeLeft={timeLeft} users={roomInfo.RoomUser} />
         <div className='space-y-4 sm:space-y-6'>
           {isQuizOpen && currentQuestion && (
             <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>

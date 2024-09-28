@@ -29,7 +29,7 @@ export default function RoomPage() {
           <WaitingScreen currentUser={data.user} roomInfo={roomInfo} />
         )}
         {roomInfo.status === 'PLAYING' && (
-          <MatchingScreen currentUser={data.user} roomInfo={roomInfo}></MatchingScreen>
+          <MatchingScreen currentUser={data.user} roomInfo={roomInfo} />
         )}
       </div>
     </Protected>
