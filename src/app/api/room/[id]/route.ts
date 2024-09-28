@@ -26,7 +26,11 @@ export const GET = async (req: Request, res: NextResponse) =>
             user: true,
           },
         },
-        questions: true,
+        questions: {
+          include: {
+            solvers: true,
+          },
+        },
       },
     });
 

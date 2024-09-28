@@ -52,7 +52,6 @@ export const SolverSchema = z.object({
   isCorrect: z.boolean(),
   userId: z.string(),
   questionId: z.string(),
-  answer: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -101,5 +100,5 @@ export const RoomUserWithUserSchema = RoomUserSchema.extend({
 
 export const RoomWithRoomUserAndUserAndQuestionSchema = RoomSchema.extend({
   RoomUser: z.array(RoomUserWithUserSchema),
-  questions: z.array(QuestionSchema),
+  questions: z.array(QuestionSchema.extend({ solvers: z.array(SolverSchema) })),
 });

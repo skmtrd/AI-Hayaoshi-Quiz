@@ -45,11 +45,24 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!roomInfo.questionOpenTimeStamp) return;
+      if (!roomInfo.questionOpenTimeStamp || roomInfo.currentQuestionIndex === null) return;
       setIsQuizOpen(isFutureTime(roomInfo.questionOpenTimeStamp));
+      console.log(isFutureTime(roomInfo.questionOpenTimeStamp));
+      console.log('isQuizOpen', isQuizOpen);
+      setAlreadyAnswered(
+        roomInfo.questions[roomInfo.currentQuestionIndex]?.solvers.some(
+          (solver) => solver.userId === currentUser.id,
+        ),
+      );
     }, 100);
     return () => clearInterval(interval);
-  }, [roomInfo.questionOpenTimeStamp]);
+  }, [
+    roomInfo.questionOpenTimeStamp,
+    roomInfo.currentQuestionIndex,
+    currentUser.id,
+    roomInfo.questions,
+    isQuizOpen,
+  ]);
 
   const handleAnswer = async (choice: string) => {
     if (roomInfo.currentQuestionIndex === null) return;
@@ -62,19 +75,26 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     if (isCorrect) {
       setScore((prevScore) => prevScore + 1);
     }
+    mutate(`/api/room/${roomInfo.id}`);
   };
 
   const handlePress = async () => {
+    if (alreadyAnswered || !isQuizOpen) return;
     const now = new Date().toISOString();
     await tryAnswer(now, roomInfo.id);
     mutate(`/api/room/${roomInfo.id}`);
   };
 
-  const handleOpenChange = useCallback((open: boolean) => {
-    if (open) {
-      setIsOpen(open);
-    }
-  }, []);
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      console.log(alreadyAnswered, isQuizOpen);
+      if (alreadyAnswered || !isQuizOpen) return;
+      if (open) {
+        setIsOpen(open);
+      }
+    },
+    [alreadyAnswered, isQuizOpen],
+  );
 
   useEffect(() => {
     setIsOpen(!!roomInfo.currentSolverId);
