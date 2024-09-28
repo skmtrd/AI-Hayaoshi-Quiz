@@ -5,9 +5,18 @@ import { z } from 'zod';
 
 import QuizDialog from '@/components/element/QuizDialog';
 import QuizInfo from '@/components/element/QuizInfo';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { isFutureTime } from '@/lib/isFutureTime';
 import { RoomWithRoomUserAndUserAndQuestionSchema } from '@/lib/schemas';
+import { Circle, X } from 'lucide-react';
 
 type MatchingScreenProps = {
   currentUser: AuthUser;
@@ -42,13 +51,14 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
   const [isOpen, setIsOpen] = useState(false);
   const [alreadyAnswered, setAlreadyAnswered] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [isOpenIncorrectDialog, setIsOpenIncorrectDialog] = useState(false);
+  const [isOpenCorrectDialog, setIsOpenCorrectDialog] = useState(false);
+  const [isOpenOtherUserCorrectDialog, setIsOpenOtherUserCorrectDialog] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (!roomInfo.questionOpenTimeStamp || roomInfo.currentQuestionIndex === null) return;
       setIsQuizOpen(isFutureTime(roomInfo.questionOpenTimeStamp));
-      console.log(isFutureTime(roomInfo.questionOpenTimeStamp));
-      console.log('isQuizOpen', isQuizOpen);
       setAlreadyAnswered(
         roomInfo.questions[roomInfo.currentQuestionIndex]?.solvers.some(
           (solver) => solver.userId === currentUser.id,
@@ -74,6 +84,15 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     await submitAnswer(isCorrect, currentQuestion.id, roomInfo.id);
     if (isCorrect) {
       setScore((prevScore) => prevScore + 1);
+      setIsOpenCorrectDialog(true);
+      setTimeout(() => {
+        setIsOpenCorrectDialog(false);
+      }, 5000);
+    } else {
+      setIsOpenIncorrectDialog(true);
+      setTimeout(() => {
+        setIsOpenIncorrectDialog(false);
+      }, 5000);
     }
     mutate(`/api/room/${roomInfo.id}`);
   };
@@ -87,7 +106,6 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
-      console.log(alreadyAnswered, isQuizOpen);
       if (alreadyAnswered || !isQuizOpen) return;
       if (open) {
         setIsOpen(open);
@@ -100,6 +118,22 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     setIsOpen(!!roomInfo.currentSolverId);
   }, [roomInfo.currentSolverId]);
 
+  useEffect(() => {
+    //前回の問題の正解者が他のユーザーだっった場合、という条件を追加
+    if (roomInfo.currentQuestionIndex === null || roomInfo.currentQuestionIndex === 0) return;
+    if (
+      roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
+        (solver) => solver.isCorrect,
+      )?.userId !== currentUser.id
+    ) {
+      setIsOpenOtherUserCorrectDialog(true);
+      setTimeout(() => {
+        setIsOpenOtherUserCorrectDialog(false);
+      }, 5000);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomInfo.currentQuestionIndex]);
+
   if (!roomInfo.questionOpenTimeStamp || roomInfo.currentQuestionIndex === null) {
     return <div>loading...</div>;
   }
@@ -108,13 +142,76 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
 
   return (
     <Card className='mx-auto w-full max-w-sm shadow-md'>
+      {isOpenIncorrectDialog && (
+        <AlertDialog open={isOpenIncorrectDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{currentQuestion?.question}</AlertDialogTitle>
+              <AlertDialogDescription>回答</AlertDialogDescription>
+              <div className='flex items-center justify-center'>
+                <X size={100} color={'blue'} strokeWidth={4} />
+              </div>
+            </AlertDialogHeader>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+      {isOpenCorrectDialog && (
+        <AlertDialog open={isOpenCorrectDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{currentQuestion?.question}</AlertDialogTitle>
+              <AlertDialogDescription>回答</AlertDialogDescription>
+              <div className='flex items-center justify-center'>
+                <Circle size={100} color={'red'} strokeWidth={4} />
+              </div>
+            </AlertDialogHeader>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+      {isOpenOtherUserCorrectDialog && (
+        <AlertDialog open={isOpenOtherUserCorrectDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{currentQuestion?.question}</AlertDialogTitle>
+              <AlertDialogDescription>回答</AlertDialogDescription>
+              <Avatar className='relative z-10 box-content size-20 border border-primary'>
+                <AvatarImage
+                  src={
+                    roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
+                      (solver) => solver.isCorrect,
+                    )?.user.image ?? ''
+                  }
+                  className='z-20'
+                />
+                <AvatarFallback>
+                  {
+                    roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
+                      (solver) => solver.isCorrect,
+                    )?.user.name
+                  }
+                </AvatarFallback>
+              </Avatar>
+              <div className='flex items-center justify-center'>
+                <Circle size={100} color={'red'} strokeWidth={4} />
+              </div>
+            </AlertDialogHeader>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
       <CardHeader className='bg-gray-100 py-4 sm:py-6'>
         <CardTitle className='text-center text-xl font-bold text-gray-800 sm:text-2xl'>
-          オンラインクイズ
+          {roomInfo.theme}
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-4 p-4 sm:space-y-6 sm:p-6'>
-        <QuizInfo score={score} timeLeft={timeLeft} />
+        <QuizInfo
+          score={score}
+          timeLeft={timeLeft}
+          users={roomInfo.RoomUser}
+          questionInfos={roomInfo.questions}
+          currentQuestionIndex={roomInfo.currentQuestionIndex}
+        />
         <div className='space-y-4 sm:space-y-6'>
           {isQuizOpen && currentQuestion && (
             <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>

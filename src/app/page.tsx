@@ -35,7 +35,7 @@ export default async function Home() {
       <div className='flex w-full flex-col md:flex-row md:items-center md:justify-between'>
         <div className='mb-8 md:mb-0 md:w-1/2 md:pr-8'>
           <h2 className='mb-4 text-xl font-semibold sm:text-2xl'>
-            知識と反射神経を競う新感覚クイズゲーム
+            知識と反射神経を競うクイズゲーム
           </h2>
           <p className='mb-6 text-base text-muted-foreground sm:text-lg'>
             AIが生成する多彩な問題に挑戦し、友達や世界中のプレイヤーと競い合おう。
