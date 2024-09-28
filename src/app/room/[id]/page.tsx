@@ -3,7 +3,7 @@ import MatchingScreen from '@/components/element/MatchingScreen';
 import { WaitingScreen } from '@/components/element/WaitingScreen';
 import useRoomData from '@/hooks/SWR/useRoomData';
 import { useSession } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
+import { redirect, usePathname } from 'next/navigation';
 
 export default function RoomPage() {
   const { data } = useSession();
@@ -15,6 +15,10 @@ export default function RoomPage() {
   }
 
   if (isLoading || !roomInfo) return <div>Loading...</div>;
+
+  if (roomInfo.status === 'FINISHED') {
+    redirect(`/api/result/${roomId}`);
+  }
 
   return (
     <div className='mx-auto flex w-full grow flex-col items-center justify-center'>
