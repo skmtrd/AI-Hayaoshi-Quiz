@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -66,8 +66,9 @@ const CreateRoomButton = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className='mb-4 w-full bg-green-500 text-white hover:bg-green-600'>
-          <Plus className='mr-2 size-4' /> 部屋を作成
+        <Button className='flex items-center rounded-full bg-green-500 px-4 py-2 font-semibold text-white hover:bg-green-600'>
+          <PlusCircle className='mr-2' size={20} />
+          新しい部屋を作成
         </Button>
       </DialogTrigger>
       <DialogContent className='sm:max-w-[425px]'>
