@@ -1,15 +1,24 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserProfileSchema } from '@/lib/schemas';
+import { prisma } from '@/lib/prisma';
 import { cn } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
-const getUser = async (id: string) => {
-  const res = await fetch(`/api/user/${id}`);
-  const data = await res.json();
-  const parsedData = UserProfileSchema.parse(data?.data);
-  return parsedData;
-};
+async function getUser(id: string) {
+  const data = await prisma.user.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      results: {
+        include: {
+          room: true,
+        },
+      },
+    },
+  });
+  return data;
+}
 
 const UserPage = async ({ params }: { params: { id: string } }) => {
   const user = await getUser(params.id);
@@ -33,8 +42,8 @@ const UserPage = async ({ params }: { params: { id: string } }) => {
         <CardHeader>
           <div className='flex items-center'>
             <Avatar className='mr-4 size-24'>
-              <AvatarImage src={user.image ?? ''} alt={user.name} />
-              <AvatarFallback>{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+              <AvatarImage src={user.image ?? ''} alt={user.name ?? ''} />
+              <AvatarFallback>{user.name?.slice(0, 2).toUpperCase() ?? ''}</AvatarFallback>
             </Avatar>
             <div>
               <CardTitle className='mb-1 text-2xl'>{user.name}</CardTitle>

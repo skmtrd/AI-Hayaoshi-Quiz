@@ -3,29 +3,30 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { prisma } from '@/lib/prisma';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Crown } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 async function getResult(id: string) {
-  const res = await fetch(`/api/result/${id}`, {
-    cache: 'no-store',
+  const data = await prisma.room.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      Result: true,
+    },
   });
-  if (!res.ok) {
-    throw new Error('結果の取得に失敗しました');
-  }
-  return res.json();
+  return data;
 }
 
 export default async function ResultPage({ params }: { params: { id: string } }) {
-  const { data } = await getResult(params.id);
+  const room = await getResult(params.id);
 
-  if (!data || !data.room) {
+  if (!room) {
     notFound();
   }
-
-  const { room } = data;
 
   const highestScore = Math.max(...room.Result.map((result: any) => result.correctCount));
 
