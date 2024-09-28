@@ -21,7 +21,7 @@ type ShareModalProps = {
 export function ShareModal({ path, text }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const shareUrl = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
-    ? `${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/${path}`
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/${path}`
     : `http://localhost:3000/${path}`;
 
   const copyToClipboard = () => {
