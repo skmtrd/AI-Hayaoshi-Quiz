@@ -19,7 +19,7 @@ export default function RoomPage() {
   if (isLoading || !roomInfo) return <LoadScreen />;
 
   if (roomInfo.status === 'FINISHED') {
-    redirect(`/api/result/${roomId}`);
+    redirect(`/result/${roomId}`);
   }
 
   return (
