@@ -1,4 +1,3 @@
-import { dbConnect } from '@/lib/dbConnect';
 import { getUserId } from '@/lib/getUserId';
 import { handleAPIError } from '@/lib/handleAPIError';
 import { prisma } from '@/lib/prisma';
@@ -7,7 +6,6 @@ import { NextResponse } from 'next/server';
 
 export const PUT = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
-    dbConnect();
     const roomId: string = req.url.split('/')[5];
     const userId = await getUserId();
 

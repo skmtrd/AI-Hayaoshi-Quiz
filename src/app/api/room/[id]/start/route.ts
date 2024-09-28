@@ -1,4 +1,3 @@
-import { dbConnect } from '@/lib/dbConnect';
 import { handleAPIError } from '@/lib/handleAPIError';
 import { prisma } from '@/lib/prisma';
 import { apiRes } from '@/lib/types';
@@ -7,7 +6,6 @@ import { NextResponse } from 'next/server';
 
 export const PUT = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
-    dbConnect();
     const roomId: string = req.url.split('/')[5];
     if (!roomId) {
       return NextResponse.json<apiRes>({ message: 'room not exits' }, { status: 400 });

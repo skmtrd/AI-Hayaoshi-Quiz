@@ -1,4 +1,3 @@
-import { dbConnect } from '@/lib/dbConnect';
 import { handleAPIError } from '@/lib/handleAPIError';
 import { prisma } from '@/lib/prisma';
 import { apiRes } from '@/lib/types';
@@ -10,8 +9,6 @@ export const GET = async (
   res: NextResponse,
 ) =>
   handleAPIError(async () => {
-    await dbConnect();
-
     if (!params.id) {
       return NextResponse.json<apiRes>(
         { message: 'user id is required', data: null },

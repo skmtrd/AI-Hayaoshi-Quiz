@@ -1,4 +1,3 @@
-import { dbConnect } from '@/lib/dbConnect';
 import { handleAPIError } from '@/lib/handleAPIError';
 import { prisma } from '@/lib/prisma';
 import { apiRes } from '@/lib/types';
@@ -8,7 +7,6 @@ import { NextResponse } from 'next/server';
 export const GET = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
     console.log('passmedkonldknsjnj');
-    await dbConnect();
     const roomId: string = req.url.split('room/')[1];
 
     if (!roomId) {

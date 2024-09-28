@@ -1,4 +1,3 @@
-import { dbConnect } from '@/lib/dbConnect';
 import { generateQuestions } from '@/lib/generateQuestions';
 import { getUserId } from '@/lib/getUserId';
 import { handleAPIError } from '@/lib/handleAPIError';
@@ -9,7 +8,6 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 export const POST = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
-    await dbConnect();
     const { theme, difficulty, answerTimeLimit, thinkingTimeLimit, types, maxPlayer } =
       await req.json();
 
@@ -73,7 +71,6 @@ export const POST = async (req: Request, res: NextResponse) =>
 
 export const GET = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
-    await dbConnect();
     const rooms = await prisma.room.findMany({
       orderBy: { createdAt: 'desc' },
     });

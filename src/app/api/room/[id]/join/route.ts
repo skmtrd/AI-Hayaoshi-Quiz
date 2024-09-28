@@ -1,4 +1,3 @@
-import { dbConnect } from '@/lib/dbConnect';
 import { getUserId } from '@/lib/getUserId';
 import { handleAPIError } from '@/lib/handleAPIError';
 import { prisma } from '@/lib/prisma';
@@ -9,7 +8,6 @@ import { NextResponse } from 'next/server';
 //これはPUTのApiで使用している関数
 const getRoomMaxPlayer = async (roomId: string) => {
   try {
-    dbConnect();
     const roomInfos = await prisma.room.findUnique({ where: { id: roomId } });
     const maxPlayer = roomInfos?.maxPlayer;
 
@@ -29,7 +27,6 @@ const getRoomMaxPlayer = async (roomId: string) => {
 //部屋への参加api
 export const PUT = async (req: Request, res: NextResponse) =>
   handleAPIError(async () => {
-    await dbConnect();
     const roomId: string = req.url.split('/')[5];
     const userId = await getUserId();
 
