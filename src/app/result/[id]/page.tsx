@@ -1,9 +1,11 @@
+import { Reward } from '@/components/element/Reward';
 import { ShareModal } from '@/components/element/ShareModal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { getUserId } from '@/lib/getUserId';
 import { prisma } from '@/lib/prisma';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Crown } from 'lucide-react';
@@ -27,6 +29,7 @@ async function getResult(id: string) {
 }
 
 export default async function ResultPage({ params }: { params: { id: string } }) {
+  const user = await getUserId();
   const room = await getResult(params.id);
 
   if (!room) {
@@ -34,9 +37,10 @@ export default async function ResultPage({ params }: { params: { id: string } })
   }
 
   const highestScore = Math.max(...room.Result.map((result: any) => result.correctCount));
+  const isWinner = room.Result.some((result) => result.user.id === user);
 
   return (
-    <div className='flex flex-1 items-center justify-center'>
+    <div className='flex flex-1 flex-col items-center justify-center'>
       <Card className='w-full max-w-xl'>
         <CardHeader>
           <CardTitle className='text-3xl font-bold'>試合結果</CardTitle>
@@ -103,6 +107,7 @@ export default async function ResultPage({ params }: { params: { id: string } })
           </div>
         </CardFooter>
       </Card>
+      {isWinner && <Reward enabled={isWinner} />}
     </div>
   );
 }

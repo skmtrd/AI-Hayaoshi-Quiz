@@ -36,6 +36,7 @@
     "openai": "^4.63.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-rewards": "^2.0.4",
     "sonner": "^1.5.0",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.5.2",
