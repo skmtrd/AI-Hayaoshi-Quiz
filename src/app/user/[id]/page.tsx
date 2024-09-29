@@ -35,6 +35,8 @@ async function getUser(id: string) {
 const UserPage = async ({ params }: { params: { id: string } }) => {
   const user = await getUser(params.id);
 
+  const rating = user?.results.reduce((acc, result) => acc + (result.ratingDelta ?? 0), 0);
+
   if (!user) {
     redirect('/');
   }
@@ -67,7 +69,7 @@ const UserPage = async ({ params }: { params: { id: string } }) => {
           <div className='mb-6 grid grid-cols-2 gap-4'>
             <p>
               <span className='font-semibold text-gray-600'>レーティング:</span>
-              <span className='text-lg'>{user.rating}</span>
+              <span className='text-lg'>{rating}</span>
             </p>
             <p>
               <span className='font-semibold text-gray-600'>勝率:</span>
