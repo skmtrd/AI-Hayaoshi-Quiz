@@ -62,11 +62,12 @@ export default async function Home() {
         </div>
         <div className='md:w-1/2'>
           <Image
-            src=''
+            src='/introduction.png'
             alt='AI早押しバトルのイメージ'
             width={500}
             height={300}
-            className='h-auto w-full rounded-lg shadow-lg'
+            className='h-auto w-full select-none rounded-lg shadow-lg'
+            draggable={false}
           />
         </div>
       </div>

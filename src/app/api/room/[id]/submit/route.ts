@@ -96,7 +96,7 @@ export const PUT = async (req: Request, res: NextResponse) =>
             currentQuestionIndex: roomInfos?.currentQuestionIndex + 1,
           },
         });
-        const results = await calculateResults(roomId, newRoomInfos.types === 'RATED');
+        const results = await calculateResults(roomId, true);
         console.log(results);
 
         if (newRoomInfos.currentQuestionIndex === roomInfos?.questions.length) {
