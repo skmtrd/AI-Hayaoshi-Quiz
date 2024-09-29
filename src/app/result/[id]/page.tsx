@@ -95,14 +95,14 @@ export default async function ResultPage({ params }: { params: { id: string } })
             </div>
           </ScrollArea>
         </CardContent>
-        <CardFooter className='flex w-full justify-between'>
-          <Link href='/room' passHref className='mr-2 flex-1'>
+        <CardFooter className='flex w-full flex-col justify-between sm:flex-row'>
+          <Link href='/room' passHref className='mb-2 w-full sm:mb-0 sm:mr-2 sm:w-auto'>
             <Button className='w-full' variant='secondary'>
               <ArrowLeft className='mr-2' />
               部屋一覧に戻る
             </Button>
           </Link>
-          <div className='ml-2 flex-1'>
+          <div className='w-full sm:ml-2 sm:w-auto'>
             <ShareModal path={`result/${room.id}`} text='試合結果をシェア' />
           </div>
         </CardFooter>
