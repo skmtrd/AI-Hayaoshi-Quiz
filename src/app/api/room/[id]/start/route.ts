@@ -12,7 +12,7 @@ export const PUT = async (req: Request, res: NextResponse) =>
     }
 
     const nowDate = new Date();
-    nowDate.setSeconds(nowDate.getSeconds() + 15);
+    nowDate.setSeconds(nowDate.getSeconds() + 7);
     const questionOpenTimeStamp = nowDate.toISOString();
 
     const newRoomInfos = await prisma.room.update({

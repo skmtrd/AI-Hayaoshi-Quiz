@@ -46,6 +46,16 @@ const submitAnswer = async (isCorrect: boolean, questionId: string, roomId: stri
   return res.json();
 };
 
+const timeOut = async (roomId: string) => {
+  const res = await fetch(`/api/room/${roomId}/timeout`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return res.json();
+};
+
 const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }) => {
   const [score, setScore] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -57,7 +67,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  const [questionTextIndex, setQuestionTextIndex] = useState(0);
   const router = useRouter();
+  const [isTimeout, setIsTimeout] = useState(false);
 
   useEffect(() => {
     if (isTimerActive) {
@@ -80,6 +92,27 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
   }, [isTimerActive, timer]);
 
   useEffect(() => {
+    if (isTimerActive) {
+      const newTimer = setInterval(() => {
+        setQuestionTextIndex((prevIndex) => {
+          if (roomInfo.currentQuestionIndex === null || roomInfo.currentQuestionIndex >= 3)
+            return prevIndex;
+          if (prevIndex === roomInfo.questions[roomInfo.currentQuestionIndex].question.length) {
+            return roomInfo.questions[roomInfo.currentQuestionIndex].question.length;
+          }
+          return prevIndex + 1;
+        });
+      }, 100);
+      return () => {
+        clearInterval(newTimer);
+      };
+    } else if (timer) {
+      clearInterval(timer);
+      setTimer(null);
+    }
+  }, [isTimerActive, timer, roomInfo.currentQuestionIndex, roomInfo.questions]);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       if (!roomInfo.questionOpenTimeStamp || roomInfo.currentQuestionIndex === null) return;
       setIsQuizOpen(isFutureTime(roomInfo.questionOpenTimeStamp));
@@ -93,8 +126,6 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
         !isTimerActive &&
         !roomInfo.currentSolverId
       ) {
-        console.log('setIsTimerActive(true)');
-        console.log(isTimerActive);
         setIsTimerActive(true);
       }
     }, 100);
@@ -107,6 +138,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     isQuizOpen,
     isTimerActive,
     roomInfo.currentSolverId,
+    isTimeout,
+    roomInfo.status,
+    roomInfo.id,
   ]);
 
   const handleAnswer = async (choice: string) => {
@@ -133,9 +167,7 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
   };
 
   const handlePress = async () => {
-    console.log(timeLeft);
     if (alreadyAnswered || !isQuizOpen || timeLeft === 0) return;
-    console.log('handlePress');
     const now = new Date().toISOString();
     await tryAnswer(now, roomInfo.id);
     mutate(`/api/room/${roomInfo.id}`);
@@ -162,7 +194,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
 
   useEffect(() => {
     setTimeLeft(15);
+    setQuestionTextIndex(0);
     setIsTimerActive(false);
+    setIsTimeout(false);
     if (roomInfo.currentQuestionIndex === null || roomInfo.currentQuestionIndex === 0) return;
     if (
       roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
@@ -186,9 +220,21 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
       router.push(`/result/${roomInfo.id}`);
     }, 10000);
   }
-
-  // if (roomInfo.ownerId === currentUser.id || timeLeft === 0) {
-  // }
+  if (roomInfo.currentQuestionIndex === null || roomInfo.currentQuestionIndex === undefined)
+    return <div>loading...</div>;
+  if (
+    roomInfo.ownerId === currentUser.id &&
+    timeLeft === 0 &&
+    roomInfo.questions[roomInfo.currentQuestionIndex]?.solvers.find(
+      (solver) => solver.isCorrect,
+    ) === undefined &&
+    isQuizOpen &&
+    !isTimeout
+  ) {
+    setIsTimeout(true);
+    timeOut(roomInfo.id);
+    mutate(`/api/room/${roomInfo.id}`);
+  }
 
   const currentQuestion = roomInfo.questions[roomInfo.currentQuestionIndex];
 
@@ -283,7 +329,7 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
         <div className='space-y-4 sm:space-y-6'>
           {isQuizOpen && currentQuestion && (
             <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>
-              {currentQuestion.question}
+              {currentQuestion.question.slice(0, questionTextIndex)}
             </p>
           )}
           {!currentQuestion && (
@@ -297,6 +343,7 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
             currentUser={currentUser}
             roomInfo={roomInfo}
             currentQuestion={currentQuestion}
+            questionTextIndex={questionTextIndex}
             handlePress={handlePress}
             handleAnswer={handleAnswer}
           />
