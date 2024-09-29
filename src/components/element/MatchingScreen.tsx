@@ -187,6 +187,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     }, 10000);
   }
 
+  // if (roomInfo.ownerId === currentUser.id || timeLeft === 0) {
+  // }
+
   const currentQuestion = roomInfo.questions[roomInfo.currentQuestionIndex];
 
   return (
@@ -228,27 +231,37 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
               <AlertDialogTitle>
                 {roomInfo.questions[roomInfo.currentQuestionIndex - 1].question}
               </AlertDialogTitle>
-              <AlertDialogDescription>回答</AlertDialogDescription>
-              <Avatar className='relative z-10 box-content size-20 border border-primary'>
-                <AvatarImage
-                  src={
-                    roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
-                      (solver) => solver.isCorrect,
-                    )?.user.image ?? ''
-                  }
-                  className='z-20'
-                />
-                <AvatarFallback>
-                  {
-                    roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
-                      (solver) => solver.isCorrect,
-                    )?.user.name
-                  }
-                </AvatarFallback>
-              </Avatar>
-              <div className='flex items-center justify-center'>
-                <Circle size={100} color={'red'} strokeWidth={4} />
-              </div>
+              <AlertDialogDescription>
+                回答:{roomInfo.questions[roomInfo.currentQuestionIndex - 1].answer}
+              </AlertDialogDescription>
+              {!!roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
+                (solver) => solver.isCorrect,
+              ) ? (
+                <div>
+                  <Avatar className='relative z-10 box-content size-20 border border-primary'>
+                    <AvatarImage
+                      src={
+                        roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
+                          (solver) => solver.isCorrect,
+                        )?.user.image ?? ''
+                      }
+                      className='z-20'
+                    />
+                    <AvatarFallback>
+                      {
+                        roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
+                          (solver) => solver.isCorrect,
+                        )?.user.name
+                      }
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className='flex items-center justify-center'>
+                    <Circle size={100} color={'red'} strokeWidth={4} />
+                  </div>
+                </div>
+              ) : (
+                <p>正解者なし</p>
+              )}
             </AlertDialogHeader>
           </AlertDialogContent>
         </AlertDialog>

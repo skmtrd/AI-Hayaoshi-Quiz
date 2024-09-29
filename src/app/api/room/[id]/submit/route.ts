@@ -18,7 +18,7 @@ export const PUT = async (req: Request, res: NextResponse) =>
 
     const roomInfos = await prisma.room.findUnique({
       where: { id: roomId },
-      include: { questions: true, Result: true },
+      include: { questions: true, Result: true, RoomUser: true },
     });
 
     if (roomInfos?.status === 'FINISHED') {
@@ -76,6 +76,44 @@ export const PUT = async (req: Request, res: NextResponse) =>
           buttonTimeStamp: null,
         },
       });
+      const solvers = await prisma.solver.findMany({
+        where: { questionId: questionId },
+        include: { user: true },
+      });
+
+      if (
+        solvers.length === roomInfos?.RoomUser.length &&
+        roomInfos?.currentQuestionIndex !== null &&
+        roomInfos?.currentQuestionIndex !== undefined
+      ) {
+        const nowDate = new Date();
+        nowDate.setSeconds(nowDate.getSeconds() + 15);
+        const questionOpenTimeStamp = nowDate.toISOString();
+        const newRoomInfos = await prisma.room.update({
+          where: { id: roomId },
+          data: {
+            questionOpenTimeStamp: questionOpenTimeStamp,
+            currentQuestionIndex: roomInfos?.currentQuestionIndex + 1,
+          },
+        });
+        const results = await calculateResults(roomId, newRoomInfos.types === 'RATED');
+        console.log(results);
+
+        if (newRoomInfos.currentQuestionIndex === roomInfos?.questions.length) {
+          const updatedRoomInfos = await prisma.room.update({
+            where: { id: roomId },
+            data: {
+              status: 'FINISHED',
+              Result: {
+                createMany: {
+                  data: results,
+                },
+              },
+            },
+          });
+        }
+      }
     }
+
     return NextResponse.json<apiRes>({ message: 'solver created', data: solver }, { status: 200 });
   });
