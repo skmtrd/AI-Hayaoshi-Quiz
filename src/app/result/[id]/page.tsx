@@ -37,7 +37,7 @@ export default async function ResultPage({ params }: { params: { id: string } })
   }
 
   const highestScore = Math.max(...room.Result.map((result: any) => result.correctCount));
-  const isWinner = room.Result.some((result) => result.user.id === user);
+  const isWinner = room.Result.findIndex((result) => result.user.id === user) === 0;
 
   return (
     <div className='flex flex-1 flex-col items-center justify-center'>
