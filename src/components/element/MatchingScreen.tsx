@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { isFutureTime } from '@/lib/isFutureTime';
 import { RoomWithRoomUserAndUserAndQuestionSchema } from '@/lib/schemas';
 import { Circle, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 type MatchingScreenProps = {
   currentUser: AuthUser;
@@ -47,13 +48,36 @@ const submitAnswer = async (isCorrect: boolean, questionId: string, roomId: stri
 
 const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }) => {
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
   const [isOpen, setIsOpen] = useState(false);
   const [alreadyAnswered, setAlreadyAnswered] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isOpenIncorrectDialog, setIsOpenIncorrectDialog] = useState(false);
   const [isOpenCorrectDialog, setIsOpenCorrectDialog] = useState(false);
   const [isOpenOtherUserCorrectDialog, setIsOpenOtherUserCorrectDialog] = useState(false);
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isTimerActive) {
+      const newTimer = setInterval(() => {
+        setTimeLeft((prevTime) => {
+          if (prevTime === 0) {
+            setIsTimerActive(false);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+      return () => {
+        clearInterval(newTimer);
+      };
+    } else if (timer) {
+      clearInterval(timer);
+      setTimer(null);
+    }
+  }, [isTimerActive, timer]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -64,6 +88,15 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
           (solver) => solver.userId === currentUser.id,
         ),
       );
+      if (
+        isFutureTime(roomInfo.questionOpenTimeStamp) &&
+        !isTimerActive &&
+        !roomInfo.currentSolverId
+      ) {
+        console.log('setIsTimerActive(true)');
+        console.log(isTimerActive);
+        setIsTimerActive(true);
+      }
     }, 100);
     return () => clearInterval(interval);
   }, [
@@ -72,6 +105,8 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
     currentUser.id,
     roomInfo.questions,
     isQuizOpen,
+    isTimerActive,
+    roomInfo.currentSolverId,
   ]);
 
   const handleAnswer = async (choice: string) => {
@@ -98,7 +133,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
   };
 
   const handlePress = async () => {
-    if (alreadyAnswered || !isQuizOpen) return;
+    console.log(timeLeft);
+    if (alreadyAnswered || !isQuizOpen || timeLeft === 0) return;
+    console.log('handlePress');
     const now = new Date().toISOString();
     await tryAnswer(now, roomInfo.id);
     mutate(`/api/room/${roomInfo.id}`);
@@ -106,19 +143,26 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
-      if (alreadyAnswered || !isQuizOpen) return;
+      if (alreadyAnswered || !isQuizOpen || timeLeft === 0) return;
       if (open) {
         setIsOpen(open);
       }
     },
-    [alreadyAnswered, isQuizOpen],
+    [alreadyAnswered, isQuizOpen, timeLeft],
   );
 
   useEffect(() => {
     setIsOpen(!!roomInfo.currentSolverId);
+    if (!roomInfo.currentSolverId) {
+      setIsTimerActive(true);
+    } else {
+      setIsTimerActive(false);
+    }
   }, [roomInfo.currentSolverId]);
 
   useEffect(() => {
+    setTimeLeft(15);
+    setIsTimerActive(false);
     if (roomInfo.currentQuestionIndex === null || roomInfo.currentQuestionIndex === 0) return;
     if (
       roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
@@ -136,6 +180,15 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
   if (!roomInfo.questionOpenTimeStamp || roomInfo.currentQuestionIndex === null) {
     return <div>loading...</div>;
   }
+
+  if (roomInfo.status === 'FINISHED') {
+    setTimeout(() => {
+      router.push(`/result/${roomInfo.id}`);
+    }, 10000);
+  }
+
+  // if (roomInfo.ownerId === currentUser.id || timeLeft === 0) {
+  // }
 
   const currentQuestion = roomInfo.questions[roomInfo.currentQuestionIndex];
 
@@ -159,7 +212,9 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                {roomInfo.questions[roomInfo.currentQuestionIndex - 1].question}
+                {roomInfo.currentQuestionIndex === 0
+                  ? ''
+                  : roomInfo.questions[roomInfo.currentQuestionIndex - 1].question}
               </AlertDialogTitle>
               <AlertDialogDescription>回答</AlertDialogDescription>
               <div className='flex items-center justify-center'>
@@ -176,27 +231,37 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
               <AlertDialogTitle>
                 {roomInfo.questions[roomInfo.currentQuestionIndex - 1].question}
               </AlertDialogTitle>
-              <AlertDialogDescription>回答</AlertDialogDescription>
-              <Avatar className='relative z-10 box-content size-20 border border-primary'>
-                <AvatarImage
-                  src={
-                    roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
-                      (solver) => solver.isCorrect,
-                    )?.user.image ?? ''
-                  }
-                  className='z-20'
-                />
-                <AvatarFallback>
-                  {
-                    roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
-                      (solver) => solver.isCorrect,
-                    )?.user.name
-                  }
-                </AvatarFallback>
-              </Avatar>
-              <div className='flex items-center justify-center'>
-                <Circle size={100} color={'red'} strokeWidth={4} />
-              </div>
+              <AlertDialogDescription>
+                回答:{roomInfo.questions[roomInfo.currentQuestionIndex - 1].answer}
+              </AlertDialogDescription>
+              {!!roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
+                (solver) => solver.isCorrect,
+              ) ? (
+                <div>
+                  <Avatar className='relative z-10 box-content size-20 border border-primary'>
+                    <AvatarImage
+                      src={
+                        roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
+                          (solver) => solver.isCorrect,
+                        )?.user.image ?? ''
+                      }
+                      className='z-20'
+                    />
+                    <AvatarFallback>
+                      {
+                        roomInfo.questions[roomInfo.currentQuestionIndex - 1].solvers.find(
+                          (solver) => solver.isCorrect,
+                        )?.user.name
+                      }
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className='flex items-center justify-center'>
+                    <Circle size={100} color={'red'} strokeWidth={4} />
+                  </div>
+                </div>
+              ) : (
+                <p>正解者なし</p>
+              )}
             </AlertDialogHeader>
           </AlertDialogContent>
         </AlertDialog>
@@ -219,6 +284,11 @@ const MatchingScreen: React.FC<MatchingScreenProps> = ({ currentUser, roomInfo }
           {isQuizOpen && currentQuestion && (
             <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>
               {currentQuestion.question}
+            </p>
+          )}
+          {!currentQuestion && (
+            <p className='text-center text-lg font-semibold text-gray-700 sm:text-xl'>
+              集計中です...
             </p>
           )}
           <QuizDialog

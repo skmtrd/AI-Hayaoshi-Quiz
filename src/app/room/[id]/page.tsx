@@ -5,7 +5,7 @@ import { LoadScreen } from '@/components/Layout/LoadScreen';
 import Protected from '@/components/Layout/Protected';
 import useRoomData from '@/hooks/SWR/useRoomData';
 import { useSession } from 'next-auth/react';
-import { redirect, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export default function RoomPage() {
   const { data } = useSession();
@@ -18,9 +18,11 @@ export default function RoomPage() {
 
   if (isLoading || !roomInfo) return <LoadScreen />;
 
-  if (roomInfo.status === 'FINISHED') {
-    redirect(`/result/${roomId}`);
-  }
+  // if (roomInfo.status === 'FINISHED') {
+  //   setTimeout(() => {
+  //     redirect(`/result/${roomId}`);
+  //   }, 5000);
+  // }
 
   return (
     <Protected>
@@ -28,7 +30,7 @@ export default function RoomPage() {
         {roomInfo.status === 'WAITING' && (
           <WaitingScreen currentUser={data.user} roomInfo={roomInfo} />
         )}
-        {roomInfo.status === 'PLAYING' && (
+        {(roomInfo.status === 'PLAYING' || roomInfo.status === 'FINISHED') && (
           <MatchingScreen currentUser={data.user} roomInfo={roomInfo} />
         )}
       </div>
