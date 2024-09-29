@@ -23,6 +23,7 @@ type QuizDialogProps = {
     | undefined;
   handlePress: () => Promise<void>;
   handleAnswer: (choice: string) => Promise<void>;
+  questionTextIndex: number;
 };
 
 const QuizDialog: React.FC<QuizDialogProps> = ({
@@ -33,6 +34,7 @@ const QuizDialog: React.FC<QuizDialogProps> = ({
   currentQuestion,
   handlePress,
   handleAnswer,
+  questionTextIndex,
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -41,7 +43,9 @@ const QuizDialog: React.FC<QuizDialogProps> = ({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{currentQuestion?.question}</AlertDialogTitle>
+          <AlertDialogTitle>
+            {currentQuestion?.question.slice(0, questionTextIndex)}
+          </AlertDialogTitle>
           <AlertDialogDescription>
             {roomInfo.currentSolverId === currentUser.id
               ? '以下から正しい答えを選んでください。'
